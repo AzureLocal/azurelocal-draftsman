@@ -1,5 +1,6 @@
 import { isValidAnchorId } from '@/lib/geometry/anchors';
 import type { AnchorId, DiagramDocument, FlowSourceRules, NodeEntity, NodeShape } from '@/types/document';
+import type { ClusterDesign, NetworkIntent, TrafficType } from '@/types/topology';
 import { DOCUMENT_VERSION } from '@/types/document';
 
 const STORAGE_KEY = 'draftsman.diagram.document';
@@ -93,6 +94,7 @@ export function normalizeDocument(input: unknown): DiagramDocument {
   const pipes = Array.isArray((value as { pipes?: unknown })?.pipes) ? (value as { pipes: unknown[] }).pipes : [];
 
   return {
+    // Version 1 files (before cluster design and intents) load unchanged: every new field is optional.
     version: DOCUMENT_VERSION,
     id: typeof value?.id === 'string' ? value.id : crypto.randomUUID(),
     name: typeof value?.name === 'string' ? value.name : 'Recovered Diagram',
@@ -101,6 +103,7 @@ export function normalizeDocument(input: unknown): DiagramDocument {
     connectors: connectors as DiagramDocument['connectors'],
     texts: texts as DiagramDocument['texts'],
     pipes: pipes as DiagramDocument['pipes'],
+    cluster: normalizeCluster(value?.cluster),
     scenarios: Array.isArray(value?.scenarios) ? value!.scenarios : undefined,
     flowSources: Array.isArray(value?.flowSources) ? value!.flowSources : undefined,
     flowTypes: Array.isArray(value?.flowTypes) ? value!.flowTypes : undefined,
@@ -136,6 +139,47 @@ function normalizeNode(node: unknown): NodeEntity {
     zIndex: Number(value.zIndex ?? 1),
     tags: Array.isArray(value.tags) ? value.tags.filter((t): t is string => typeof t === 'string') : undefined,
     notes: typeof value.notes === 'string' ? value.notes : undefined,
+    hardwareProfileId: typeof value.hardwareProfileId === 'string' ? value.hardwareProfileId : undefined,
+    hardwareRole: typeof value.hardwareRole === 'string' ? value.hardwareRole : undefined,
+    setTeams: Array.isArray(value.setTeams)
+      ? value.setTeams
+          .filter((t) => t && typeof t.id === 'string' && Array.isArray(t.portIds))
+          .map((t) => ({ id: t.id, name: typeof t.name === 'string' ? t.name : t.id, portIds: t.portIds.filter((p): p is string => typeof p === 'string') }))
+      : undefined,
+    intents: normalizeIntents(value.intents),
+    zoneId: typeof value.zoneId === 'string' && value.zoneId ? value.zoneId : undefined,
+    trunkVlans: Array.isArray(value.trunkVlans) ? value.trunkVlans.filter((v): v is number => typeof v === 'number' && Number.isFinite(v)) : undefined,
+  };
+}
+
+const TRAFFIC_TYPES: TrafficType[] = ['management', 'compute', 'storage'];
+
+function normalizeIntents(input: unknown): NetworkIntent[] | undefined {
+  if (!Array.isArray(input)) return undefined;
+  const intents = input
+    .filter((i): i is Record<string, unknown> => !!i && typeof i === 'object')
+    .map((i, index) => ({
+      id: typeof i.id === 'string' ? i.id : `intent-${index + 1}`,
+      name: typeof i.name === 'string' ? i.name : `Intent${index + 1}`,
+      traffic: Array.isArray(i.traffic) ? i.traffic.filter((t): t is TrafficType => TRAFFIC_TYPES.includes(t as TrafficType)) : [],
+      portIds: Array.isArray(i.portIds) ? i.portIds.filter((p): p is string => typeof p === 'string') : [],
+    }));
+  return intents.length > 0 ? intents : undefined;
+}
+
+function normalizeCluster(input: unknown): ClusterDesign | undefined {
+  if (!input || typeof input !== 'object') return undefined;
+  const c = input as Record<string, unknown>;
+  const pattern = c.pattern === 'rack-aware' ? 'rack-aware' : c.pattern === 'single-rack' ? 'single-rack' : undefined;
+  const storage = c.storage === 'switchless' ? 'switchless' : c.storage === 'switched' ? 'switched' : undefined;
+  if (!pattern || !storage) return undefined;
+  const intentModels = ['group-all', 'mgmt-compute-storage', 'disaggregated', 'custom'];
+  return {
+    pattern,
+    storage,
+    intentModel: intentModels.includes(c.intentModel as string) ? (c.intentModel as ClusterDesign['intentModel']) : undefined,
+    rdma: c.rdma === 'iwarp' ? 'iwarp' : c.rdma === 'roce' ? 'roce' : undefined,
+    torPerZone: c.torPerZone === 1 ? 1 : c.torPerZone === 2 ? 2 : undefined,
   };
 }
 

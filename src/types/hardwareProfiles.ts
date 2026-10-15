@@ -10,6 +10,8 @@ export interface PortGroupSpec {
   speedGbps: number;
   labelPrefix?: string;
   startIndex?: number;
+  /** Set to override the RDMA heuristic (SFP-type ports at 10G or faster are assumed RDMA-capable). */
+  rdmaCapable?: boolean;
 }
 
 export interface HardwareProfile {
@@ -76,6 +78,23 @@ export const HARDWARE_PROFILES: HardwareProfile[] = [
     portGroups: [
       { name: 'RJ45 OOB Ports', count: 48, mediaType: '1G-RJ45', speedGbps: 1, labelPrefix: 'Mgmt', startIndex: 1 },
       { name: 'SFP+ Uplinks', count: 4, mediaType: '10G-SFP+', speedGbps: 10, labelPrefix: 'Up', startIndex: 49 }
+    ],
+    defaultRole: '1G OOB Management'
+  },
+
+  {
+    id: 'dell-s3148p-on',
+    vendor: 'dell',
+    model: 'Dell PowerSwitch S3148P-ON',
+    category: 'oobSwitch',
+    formFactorU: 1,
+    description: '48x 1GbE RJ45 + 2x 10GbE SFP+ Out-of-Band Management Switch',
+    primaryColor: '#161c24',
+    accentColor: '#007db8',
+    ledColor: '#ffc107',
+    portGroups: [
+      { name: 'RJ45 OOB Ports', count: 48, mediaType: '1G-RJ45', speedGbps: 1, labelPrefix: 'Mgmt', startIndex: 1 },
+      { name: 'SFP+ Uplinks', count: 2, mediaType: '10G-SFP+', speedGbps: 10, labelPrefix: 'Up', startIndex: 49 }
     ],
     defaultRole: '1G OOB Management'
   },
@@ -235,6 +254,40 @@ export const HARDWARE_PROFILES: HardwareProfile[] = [
     defaultRole: 'Azure Local 1U HCI Node'
   },
   {
+    id: 'dell-ax-770',
+    vendor: 'dell',
+    model: 'Dell AX-770 Azure Local HCI Node',
+    category: 'serverNode',
+    formFactorU: 2,
+    description: '2U Azure Local HCI Node with iDRAC9, OCP 3.0 (Dual 25G) and a dual-port PCIe 25G NIC (reference port layout)',
+    primaryColor: '#1a222d',
+    accentColor: '#007db8',
+    ledColor: '#00e5ff',
+    portGroups: [
+      { name: 'iDRAC9 Management', count: 1, mediaType: '1G-RJ45', speedGbps: 1, labelPrefix: 'iDRAC', startIndex: 1 },
+      { name: 'OCP 3.0 Slot', count: 2, mediaType: '25G-SFP28', speedGbps: 25, labelPrefix: 'OCP-P', startIndex: 1 },
+      { name: 'PCIe Slot 1', count: 2, mediaType: '25G-SFP28', speedGbps: 25, labelPrefix: 'Slot1-P', startIndex: 1 }
+    ],
+    defaultRole: 'Azure Local HCI Compute & Storage Node'
+  },
+  {
+    id: 'dell-ax-670',
+    vendor: 'dell',
+    model: 'Dell AX-670 Azure Local HCI Node',
+    category: 'serverNode',
+    formFactorU: 1,
+    description: '1U Azure Local HCI Node with iDRAC9, OCP 3.0 (Dual 25G) and a dual-port PCIe 25G NIC (reference port layout)',
+    primaryColor: '#1a222d',
+    accentColor: '#007db8',
+    ledColor: '#00e5ff',
+    portGroups: [
+      { name: 'iDRAC9 Management', count: 1, mediaType: '1G-RJ45', speedGbps: 1, labelPrefix: 'iDRAC', startIndex: 1 },
+      { name: 'OCP 3.0 Slot', count: 2, mediaType: '25G-SFP28', speedGbps: 25, labelPrefix: 'OCP-P', startIndex: 1 },
+      { name: 'PCIe Slot 1', count: 2, mediaType: '25G-SFP28', speedGbps: 25, labelPrefix: 'Slot1-P', startIndex: 1 }
+    ],
+    defaultRole: 'Azure Local 1U HCI Node'
+  },
+  {
     id: 'dell-poweredge-r770',
     vendor: 'dell',
     model: 'Dell PowerEdge R770 (17th Gen)',
@@ -307,4 +360,27 @@ export const HARDWARE_PROFILES: HardwareProfile[] = [
 export function getHardwareProfile(profileId?: string): HardwareProfile | undefined {
   if (!profileId) return undefined;
   return HARDWARE_PROFILES.find((p) => p.id === profileId);
+}
+
+/** Port ids of a profile in the same label scheme the canvas uses (prefix + start index + n). */
+export function listProfilePorts(profile: HardwareProfile): { id: string; group: PortGroupSpec }[] {
+  const ports: { id: string; group: PortGroupSpec }[] = [];
+  for (const group of profile.portGroups) {
+    const start = group.startIndex ?? 1;
+    for (let i = 0; i < group.count; i++) {
+      ports.push({ id: `${group.labelPrefix || 'P'}${start + i}`, group });
+    }
+  }
+  return ports;
+}
+
+/** Whether a profile port can carry RDMA (storage intent). A heuristic unless the group sets rdmaCapable. */
+export function isRdmaCapable(group: PortGroupSpec): boolean {
+  if (typeof group.rdmaCapable === 'boolean') return group.rdmaCapable;
+  return group.speedGbps >= 10 && (group.mediaType === '10G-SFP+' || group.mediaType === '25G-SFP28' || group.mediaType.startsWith('100G'));
+}
+
+/** Server data ports: everything that is not the BMC/iDRAC port. */
+export function listHostDataPorts(profile: HardwareProfile): { id: string; group: PortGroupSpec }[] {
+  return listProfilePorts(profile).filter((p) => !/idrac|ilo|bmc/i.test(p.group.name) && !/idrac|ilo|bmc/i.test(p.id));
 }

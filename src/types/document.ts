@@ -122,6 +122,8 @@ export interface AreaEntity {
   labelAnchor?: LabelAnchorCorner;
   zIndex: number;
   vlanId?: number;
+  /** What the network carries. Used by the auditor; inferred from the label when absent. */
+  purpose?: AreaPurpose;
   cidr?: string;
   mtu?: number;
   tags?: string[];
@@ -129,6 +131,7 @@ export interface AreaEntity {
 }
 
 import type { CableMediaType } from './cabling';
+import type { AreaPurpose, ClusterDesign, NetworkIntent } from './topology';
 
 export interface NodeEntity {
   id: string;
@@ -155,6 +158,12 @@ export interface NodeEntity {
   hardwareProfileId?: string;
   hardwareRole?: string;
   setTeams?: { id: string; name: string; portIds: string[] }[];
+  /** Network ATC intents for a host node. */
+  intents?: NetworkIntent[];
+  /** Availability zone (rack-aware clusters): hosts and ToR switches carry the zone they sit in. */
+  zoneId?: string;
+  /** Switches: VLAN ids allowed on the switch trunks. Undefined means not specified (not audited). */
+  trunkVlans?: number[];
   tags?: string[];
   notes?: string;
 }
@@ -208,7 +217,8 @@ export interface PipeEntity {
   notes?: string;
 }
 
-export const DOCUMENT_VERSION = 1;
+/** 2: adds cluster design, Network ATC intents, zones and trunk VLANs (all optional; version 1 files load unchanged). */
+export const DOCUMENT_VERSION = 2;
 
 export interface DiagramDocument {
   version: number;
@@ -219,6 +229,8 @@ export interface DiagramDocument {
   connectors: ConnectorEntity[];
   texts: TextEntity[];
   pipes: PipeEntity[];
+  /** Cluster pattern and intent model. Inferred from the cabling when absent. */
+  cluster?: ClusterDesign;
   scenarios?: PickerDef[];
   flowSources?: PickerDef[];
   flowTypes?: PickerDef[];
