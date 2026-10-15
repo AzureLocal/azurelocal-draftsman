@@ -43,7 +43,7 @@ this file is the offline fallback.
 
 ## Offline fallback (when the MCP server is unreachable)
 
-**Standards scope:** `azurelocal` <!-- hcs | tierpoint-prodtech | azurelocal -->
+**Standards scope:** `azurelocal` <!-- azurelocal -->
 
 **Hard rules digest:**
 
