@@ -1,5 +1,32 @@
 import { useState } from 'react';
-import { useEditorStore, type WizardTopologyConfig } from '@/state/useEditorStore';
+import { useEditorStore } from '@/state/useEditorStore';
+import { resolveIntentModel, serverProfileId, validateWizardChoice, type WizardTopologyConfig } from './buildTopology';
+import { getHardwareProfile } from '@/types/hardwareProfiles';
+import { isAtcDefaultStorageVlan, type ClusterPattern, type IntentModel, type StoragePattern } from '@/types/topology';
+
+interface TopologyPreset {
+  id: string;
+  nodeCount: WizardTopologyConfig['nodeCount'];
+  pattern: ClusterPattern;
+  storage: StoragePattern;
+  title: string;
+  desc: string;
+}
+
+const PRESETS: TopologyPreset[] = [
+  { id: 'switchless-2', nodeCount: 2, pattern: 'single-rack', storage: 'switchless', title: '2-Node Switchless Cluster', desc: 'Direct node-to-node storage links, two ToR switches for management and compute. Remote office and edge.' },
+  { id: 'switchless-3', nodeCount: 3, pattern: 'single-rack', storage: 'switchless', title: '3-Node Switchless Cluster', desc: 'Full storage mesh between three nodes. No Network ATC automatic storage IPs: plan addressing.' },
+  { id: 'switched-4', nodeCount: 4, pattern: 'single-rack', storage: 'switched', title: '4-Node Dual-ToR HA Cluster', desc: 'One MLAG ToR pair carries management, compute and storage. The standard single-rack design.' },
+  { id: 'switched-8', nodeCount: 8, pattern: 'single-rack', storage: 'switched', title: '8-Node High-Density Cluster', desc: 'Single rack, one MLAG ToR pair for all traffic, dedicated OOB console.' },
+  { id: 'rack-aware-4', nodeCount: 4, pattern: 'rack-aware', storage: 'switched', title: 'Rack-Aware Cluster (2 zones, 4 nodes)', desc: 'Two rooms, two ToR per room, dedicated storage links between rooms (VLAN 711 and 712).' },
+  { id: 'rack-aware-8', nodeCount: 8, pattern: 'rack-aware', storage: 'switched', title: 'Rack-Aware Cluster (2 zones, 8 nodes)', desc: 'Two rooms with four nodes each, management and compute grouped, dedicated storage intent.' },
+];
+
+const INTENT_MODELS: { id: IntentModel; title: string; desc: string }[] = [
+  { id: 'mgmt-compute-storage', title: 'Management + Compute, Storage', desc: 'Two intents on four ports. Required for rack-aware and switchless.' },
+  { id: 'group-all', title: 'Group all (fully converged)', desc: 'One intent on two ports carries everything. Switched single-rack only.' },
+  { id: 'disaggregated', title: 'Disaggregated (3 intents)', desc: 'Management, compute and storage on separate port pairs (six data ports).' },
+];
 
 export default function GuidedSetupWizard() {
   const wizardOpen = useEditorStore((state) => state.wizardOpen);
@@ -8,22 +35,36 @@ export default function GuidedSetupWizard() {
 
   const [step, setStep] = useState<number>(1);
 
-  const [nodeCount, setNodeCount] = useState<2 | 4 | 8>(4);
+  const [presetId, setPresetId] = useState<string>('switched-4');
+  const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[2];
+  const nodeCount = preset.nodeCount;
+  const [intentModel, setIntentModel] = useState<IntentModel>('mgmt-compute-storage');
   const [serverModel, setServerModel] = useState<string>('AX-760');
   const [switchModel, setSwitchModel] = useState<string>('Arista 7050SX3');
   const [oobConsole, setOobConsole] = useState<string>('Opengear OM2248');
-  const [mgmtVlan, setMgmtVlan] = useState<number>(711);
-  const [computeVlan, setComputeVlan] = useState<number>(712);
-  const [storageVlan1, setStorageVlan1] = useState<number>(713);
-  const [storageVlan2, setStorageVlan2] = useState<number>(714);
+  const [mgmtVlan, setMgmtVlan] = useState<number>(7);
+  const [computeVlan, setComputeVlan] = useState<number>(8);
+  const [storageVlan1, setStorageVlan1] = useState<number>(711);
+  const [storageVlan2, setStorageVlan2] = useState<number>(712);
   const [mtu, setMtu] = useState<number>(9000);
   const [cableMedia, setCableMedia] = useState<'DAC 25G' | 'MMF 100G'>('DAC 25G');
 
   if (!wizardOpen) return null;
 
+  const choiceError = validateWizardChoice({ nodeCount, pattern: preset.pattern, storage: preset.storage });
+  const effectivePlan = resolveIntentModel(getHardwareProfile(serverProfileId(serverModel)), intentModel, preset.pattern, preset.storage);
+  const intentFallback = effectivePlan.model !== intentModel;
+  const collisions = [
+    { name: 'Management', vlan: mgmtVlan },
+    { name: 'Compute', vlan: computeVlan },
+  ].filter((x) => isAtcDefaultStorageVlan(x.vlan));
+
   const handleFinish = () => {
     const config: WizardTopologyConfig = {
       nodeCount,
+      pattern: preset.pattern,
+      storage: preset.storage,
+      intentModel,
       serverModel,
       switchModel,
       oobConsole,
@@ -32,6 +73,7 @@ export default function GuidedSetupWizard() {
         computeVlan,
         storageVlan1,
         storageVlan2,
+        storageVlan3: 713,
         mtu,
       },
       cableMedia,
@@ -129,27 +171,23 @@ export default function GuidedSetupWizard() {
                 Step 1: Select Cluster Topology Target
               </h3>
               <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0 0 16px' }}>
-                Choose the target Azure Local HCI deployment architecture node scale.
+                Choose the Azure Local network pattern: switchless or switched storage, single rack or rack-aware (two zones).
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                {[
-                  { count: 2, title: '2-Node Switchless Cluster', desc: 'Direct back-to-back storage interconnects. Ideal for remote office & edge branches.' },
-                  { count: 4, title: '4-Node Dual-ToR HA Cluster', desc: 'Standard enterprise HCI deployment with redundant ToR switches and dual-path SET teaming.' },
-                  { count: 8, title: '8-Node High-Density Cluster', desc: 'Enterprise datacenter scale with multi-rack storage fault domains and dedicated OOB console.' },
-                ].map((item) => (
+                {PRESETS.map((item) => (
                   <div
-                    key={item.count}
-                    onClick={() => setNodeCount(item.count as 2 | 4 | 8)}
+                    key={item.id}
+                    onClick={() => setPresetId(item.id)}
                     style={{
                       padding: '16px',
                       borderRadius: '12px',
-                      background: nodeCount === item.count ? 'rgba(0, 229, 255, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-                      border: nodeCount === item.count ? '2px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.1)',
+                      background: presetId === item.id ? 'rgba(0, 229, 255, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                      border: presetId === item.id ? '2px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.1)',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: nodeCount === item.count ? '#00e5ff' : '#ffffff' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: presetId === item.id ? '#00e5ff' : '#ffffff' }}>
                       {item.title}
                     </div>
                     <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', lineHeight: 1.4 }}>
@@ -173,8 +211,8 @@ export default function GuidedSetupWizard() {
                 {[
                   { model: 'AX-760', specs: '2U Dual-Socket Xeon 4th Gen, 2x 25GbE Mellanox CX6-Lx, iDRAC9 Enterprise', badge: 'Popular Enterprise' },
                   { model: 'AX-660', specs: '1U High-Density Xeon 4th Gen, 2x 25GbE Mellanox CX6-Lx, iDRAC9', badge: 'High Density 1U' },
-                  { model: 'AX-770', specs: '2U Dual-Socket Xeon 5th Gen, 4x 100GbE Mellanox CX7, RoCEv2 iDRAC9', badge: 'Next-Gen 100G' },
-                  { model: 'AX-670', specs: '1U Compact Xeon 5th Gen, 4x 100GbE Mellanox CX7, RoCEv2 iDRAC9', badge: 'Next-Gen 1U' },
+                  { model: 'AX-770', specs: '2U, iDRAC9, OCP 3.0 dual 25G plus PCIe dual 25G (reference port layout)', badge: 'Next-Gen 2U' },
+                  { model: 'AX-670', specs: '1U, iDRAC9, OCP 3.0 dual 25G plus PCIe dual 25G (reference port layout)', badge: 'Next-Gen 1U' },
                 ].map((item) => (
                   <div
                     key={item.model}
@@ -249,7 +287,7 @@ export default function GuidedSetupWizard() {
                       { name: 'Opengear OM2248', desc: '48-Port Serial Console & Management Server with Smart OOB' },
                       { name: 'Opengear CM8148', desc: '48-Port Enterprise Console Server with Dual AC Power' },
                       { name: 'Dell PowerSwitch N3248TE-ON', desc: '48-Port 1GbE RJ45 + 4x 10GbE SFP+ OOB Management Switch' },
-                      { name: 'Dell PowerSwitch S3148P', desc: '48-Port 1GbE PoE+ Enterprise OOB Management Switch' },
+                      { name: 'Dell PowerSwitch S3148P', desc: '48-Port 1GbE RJ45 + 2x 10GbE SFP+ OOB Management Switch' },
                     ].map((oob) => (
                       <div
                         key={oob.name}
@@ -275,11 +313,39 @@ export default function GuidedSetupWizard() {
           {step === 4 && (
             <div>
               <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px', color: '#38bdf8' }}>
-                Step 4: Logical HCI VLAN Profile & MTU Jumbo Frames
+                Step 4: Network ATC Intents, VLANs & MTU
               </h3>
               <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0 0 16px' }}>
-                Define network traffic isolation VLAN tags and MTU jumbo frame parameters.
+                Group the host adapters into Network ATC intents, then set the VLAN tags. Network ATC defaults storage to VLAN 711 and 712 (third adapter 713); management and compute VLANs are yours to choose.
               </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginBottom: '16px' }}>
+                {INTENT_MODELS.map((m) => (
+                  <div
+                    key={m.id}
+                    onClick={() => setIntentModel(m.id)}
+                    style={{
+                      padding: '12px',
+                      borderRadius: '10px',
+                      background: intentModel === m.id ? 'rgba(0, 229, 255, 0.1)' : 'rgba(255,255,255,0.03)',
+                      border: intentModel === m.id ? '2px solid #00e5ff' : '1px solid rgba(255,255,255,0.1)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, fontSize: '13px', color: intentModel === m.id ? '#00e5ff' : '#ffffff' }}>{m.title}</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px', lineHeight: 1.3 }}>{m.desc}</div>
+                  </div>
+                ))}
+              </div>
+              {intentFallback && (
+                <div role="status" style={{ fontSize: '12px', color: '#fbbf24', marginBottom: '12px' }}>
+                  {intentModel} is not available for this pattern or server model; the diagram will use {effectivePlan.model}.
+                </div>
+              )}
+              {collisions.length > 0 && (
+                <div role="status" style={{ fontSize: '12px', color: '#fbbf24', marginBottom: '12px' }}>
+                  {collisions.map((c) => `${c.name} VLAN ${c.vlan}`).join(' and ')} collides with the Network ATC storage defaults (711 to 719). It is allowed, but set StorageVlans explicitly or pick another ID.
+                </div>
+              )}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>Management VLAN ID:</label>
@@ -335,7 +401,7 @@ export default function GuidedSetupWizard() {
                         fontWeight: 600,
                       }}
                     >
-                      MTU {m} {m === 9000 ? '(Recommended Jumbo)' : '(Standard)'}
+                      MTU {m} {m === 9000 ? '(Jumbo, recommended; required only for iWARP)' : '(Standard)'}
                     </button>
                   ))}
                 </div>
@@ -358,7 +424,7 @@ export default function GuidedSetupWizard() {
                 ].map((cm) => (
                   <div
                     key={cm.media}
-                    onClick={() => setCableMedia(cm.media as any)}
+                    onClick={() => setCableMedia(cm.media as WizardTopologyConfig['cableMedia'])}
                     style={{
                       padding: '14px',
                       borderRadius: '10px',
@@ -379,9 +445,10 @@ export default function GuidedSetupWizard() {
                   Architecture Configuration Summary:
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px', color: '#cbd5e1' }}>
-                  <div>• Cluster Size: <strong>{nodeCount} Nodes</strong></div>
+                  <div>• Pattern: <strong>{preset.title}</strong></div>
+                  <div>• Intents: <strong>{effectivePlan.intents.map((i) => i.name).join(', ')}</strong></div>
                   <div>• Server Model: <strong>Dell PowerEdge {serverModel}</strong></div>
-                  <div>• ToR Switches: <strong>Dual {switchModel}</strong></div>
+                  <div>• ToR Switches: <strong>{preset.pattern === 'rack-aware' ? 'Two per zone' : 'Pair of'} {switchModel}</strong></div>
                   <div>• OOB Console: <strong>{oobConsole}</strong></div>
                   <div>• Mgmt / Compute VLAN: <strong>VLAN {mgmtVlan} / {computeVlan}</strong></div>
                   <div>• Storage VLANs: <strong>VLAN {storageVlan1} / {storageVlan2} (MTU {mtu})</strong></div>
@@ -429,6 +496,8 @@ export default function GuidedSetupWizard() {
           ) : (
             <button
               onClick={handleFinish}
+              disabled={choiceError !== null}
+              title={choiceError ?? undefined}
               style={{
                 padding: '12px 28px',
                 borderRadius: '8px',

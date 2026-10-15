@@ -1,62 +1,47 @@
 import type { DiagramDocument } from '@/types/document';
 import { getHardwareProfile } from '@/types/hardwareProfiles';
+import { downloadText, exportFileStem } from './download';
 
 /**
- * Generates a Switch Port Provisioning Schedule TXT file detailing switch port allocations,
- * connected host devices, port speeds, and VLAN assignments for network switch configuration.
+ * Builds the switch port provisioning schedule: one block per switch or console server listing each port, the
+ * device on the other end and the VLAN tag. Pure; pass `generatedAt` for a reproducible header.
  */
-export function exportSwitchPortMap(doc: DiagramDocument): void {
-  const switches = doc.nodes.filter(
-    (n) => n.shape === 'vendorSwitch' || n.shape === 'oobSwitch' || n.shape === 'opengearConsole'
-  );
-
-  const reportLines: string[] = [];
-  reportLines.push(`================================================================================`);
-  reportLines.push(`SWITCH PORT PROVISIONING & CABLING SCHEDULE`);
-  reportLines.push(`Diagram: ${doc.name}`);
-  reportLines.push(`Generated: ${new Date().toISOString()}`);
-  reportLines.push(`================================================================================\n`);
+export function buildSwitchPortMap(doc: DiagramDocument, generatedAt: Date = new Date()): string {
+  const switches = doc.nodes.filter((n) => n.shape === 'vendorSwitch' || n.shape === 'oobSwitch' || n.shape === 'opengearConsole');
+  const lines: string[] = [];
+  const rule = '='.repeat(80);
+  const thin = '-'.repeat(80);
+  lines.push(rule, 'SWITCH PORT PROVISIONING & CABLING SCHEDULE', `Diagram: ${doc.name}`, `Generated: ${generatedAt.toISOString()}`, `${rule}\n`);
 
   if (switches.length === 0) {
-    reportLines.push(`No network switches or console managers found in diagram.\n`);
+    lines.push('No network switches or console managers found in diagram.\n');
   } else {
-    switches.forEach((sw) => {
+    for (const sw of switches) {
       const profile = getHardwareProfile(sw.hardwareProfileId);
-      reportLines.push(`--------------------------------------------------------------------------------`);
-      reportLines.push(`SWITCH: ${sw.title}`);
-      reportLines.push(`Model : ${profile?.model || 'Generic Switch'} (${profile?.formFactorU || 1}U)`);
-      reportLines.push(`Role  : ${sw.subtitle || profile?.defaultRole || 'Switch Node'}`);
-      reportLines.push(`--------------------------------------------------------------------------------`);
+      lines.push(thin, `SWITCH: ${sw.title}`, `Model : ${profile?.model || 'Generic Switch'} (${profile?.formFactorU || 1}U)`, `Role  : ${sw.subtitle || profile?.defaultRole || 'Switch Node'}`);
+      if (sw.zoneId) lines.push(`Zone  : ${sw.zoneId}`);
+      if (sw.trunkVlans && sw.trunkVlans.length > 0) lines.push(`Trunk VLANs: ${sw.trunkVlans.join(', ')}`);
+      lines.push(thin);
 
-      const connectors = doc.connectors.filter(
-        (c) => c.sourceId === sw.id || c.targetId === sw.id
-      );
-
+      const connectors = doc.connectors.filter((c) => c.sourceId === sw.id || c.targetId === sw.id);
       if (connectors.length === 0) {
-        reportLines.push(`  [No active port connections]\n`);
-      } else {
-        connectors.forEach((c) => {
-          const isSource = c.sourceId === sw.id;
-          const localPort = (isSource ? c.sourcePortId : c.targetPortId) || 'Front Port';
-          const remoteNode = doc.nodes.find((n) => n.id === (isSource ? c.targetId : c.sourceId));
-          const remotePort = (isSource ? c.targetPortId : c.sourcePortId) || 'Front Port';
-          const vlan = c.vlanId ? `VLAN ${c.vlanId}` : 'Trunk/Native';
-
-          reportLines.push(`  * Port [ ${localPort.padEnd(10)} ] -> Connected to ${remoteNode?.title || 'Unknown Device'} [ ${remotePort} ] (${vlan})`);
-        });
-        reportLines.push(``);
+        lines.push('  [No active port connections]\n');
+        continue;
       }
-    });
+      for (const c of connectors) {
+        const isSource = c.sourceId === sw.id;
+        const localPort = (isSource ? c.sourcePortId : c.targetPortId) || 'Front Port';
+        const remote = doc.nodes.find((n) => n.id === (isSource ? c.targetId : c.sourceId));
+        const remotePort = (isSource ? c.targetPortId : c.sourcePortId) || 'Front Port';
+        const vlan = c.vlanId ? `VLAN ${c.vlanId}` : 'Trunk/Native';
+        lines.push(`  * Port [ ${localPort.padEnd(10)} ] -> Connected to ${remote?.title || 'Unknown Device'} [ ${remotePort} ] (${vlan})`);
+      }
+      lines.push('');
+    }
   }
+  return lines.join('\n');
+}
 
-  const content = reportLines.join('\n');
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `${doc.name.toLowerCase().replace(/\s+/g, '_')}_switch_port_map.txt`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+export function exportSwitchPortMap(doc: DiagramDocument): void {
+  downloadText(`${exportFileStem(doc.name)}_switch_port_map.txt`, buildSwitchPortMap(doc), 'text/plain;charset=utf-8;');
 }
