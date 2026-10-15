@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useEditorStore } from '@/state/useEditorStore';
 import { auditDiagramDocument } from '@/features/validation/diagramAuditor';
+import { COMPLIANCE_RULES } from '@/types/validation';
+import ClusterDesignBar from './ClusterDesignBar';
 
 export default function CompliancePanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -72,10 +74,11 @@ export default function CompliancePanel() {
           <div style={{ fontSize: '11px', fontWeight: 700, color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px' }}>
             Compliance & Architecture Audit Results
           </div>
+          <ClusterDesignBar />
 
           {issues.length === 0 ? (
             <div style={{ fontSize: '11px', color: '#4ade80', padding: '12px 0', textAlign: 'center' }}>
-              ✓ All 5 Enterprise Compliance Rules Passed cleanly!
+              ✓ All {COMPLIANCE_RULES.length} compliance rules passed.
             </div>
           ) : (
             issues.map((issue) => (
@@ -84,6 +87,7 @@ export default function CompliancePanel() {
                 onClick={() => {
                   if (issue.targetNodeId) selectEntities('node', [issue.targetNodeId]);
                   if (issue.targetAreaId) selectEntities('area', [issue.targetAreaId]);
+                  if (!issue.targetNodeId && !issue.targetAreaId && issue.targetConnectorId) selectEntities('connector', [issue.targetConnectorId]);
                 }}
                 style={{
                   background: issue.severity === 'error' ? 'rgba(255,0,85,0.1)' : issue.severity === 'warning' ? 'rgba(255,179,0,0.1)' : 'rgba(0,210,255,0.1)',
@@ -95,7 +99,16 @@ export default function CompliancePanel() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, color: issue.severity === 'error' ? '#ff4d7d' : issue.severity === 'warning' ? '#ffca28' : '#38bdf8' }}>
                   <span>{issue.severity === 'error' ? '🔴' : issue.severity === 'warning' ? '🟡' : 'ℹ️'} {issue.title}</span>
-                  <span style={{ fontSize: '9px', opacity: 0.7 }}>[{issue.ruleId}]</span>
+                  <a
+                    href={COMPLIANCE_RULES.find((r) => r.id === issue.ruleId)?.learnUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    title="Open the Microsoft Learn reference"
+                    style={{ fontSize: '9px', opacity: 0.8, color: 'inherit' }}
+                  >
+                    [{issue.ruleId}]
+                  </a>
                 </div>
                 <div style={{ fontSize: '10px', color: '#cbd5e1', marginTop: '3px' }}>{issue.message}</div>
                 {issue.suggestedFix && (

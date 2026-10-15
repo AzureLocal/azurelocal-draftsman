@@ -10,9 +10,15 @@
 
 ## What this repo is
 
-Web application repo. Frontend built with TypeScript and React, following HCS development standards and platform conventions.
+Azure Local Draftsman: a browser-based (React, TypeScript, Vite, Vitest) cabling and compliance diagramming tool for Azure Local network architectures. Servers, ToR and OOB switches, pin-level cables, VLANs and Network ATC intents are drawn on a 2.5D canvas; a pure-function auditor checks them against the Microsoft Learn network patterns (single-rack switched, switchless, rack-aware); exporters produce the cable schedule CSV, switch port map and draw.io. Forked from AzLoFlows by Cristian Edwards Sabathe: keep the upstream credit and the LICENSE as they are. It is not a deployment tool and makes no Azure calls.
 
-<!-- One paragraph. What the repo is, why it exists, and what it is not. -->
+### Repo conventions
+
+- Learn wins: every auditor rule cites a Microsoft Learn page (`COMPLIANCE_RULES` in `src/types/validation.ts`). Public wording says Azure Local 12.2609 (latest). Examples use example values only, never customer, lab or vendor-internal names.
+- Network ATC storage VLAN defaults are 711, 712, 713; never reuse them as management defaults. Custom VLANs stay allowed (warning only).
+- Auditor, wizard builder and exporters are pure functions; keep them free of the store and the DOM and cover them with tests under `__tests__/`.
+- Checks before a commit: `npm run lint`, `npm test`, `npm run build` (and `npm run build:site` when docs change). Deploy is the `ci-pages` workflow on `main`; releases come from release-please.
+- Documentation: Markdown in `docs/` (VitePress, base `/azurelocal-draftsman/docs/`). Diagrams in docs are draw.io.
 
 ---
 

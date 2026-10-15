@@ -9,6 +9,8 @@ import { CABLE_MEDIA_CATALOG } from '@/types/cabling';
 import { DEFAULT_HCI_VLANS } from '@/types/logicalNetwork';
 import { getConnectorStyleOptions, getSelectedEntity, useEditorStore } from '@/state/useEditorStore';
 import FlowTypeVisibilityDialog from './FlowTypeVisibilityDialog';
+import NetworkIntentEditor from './NetworkIntentEditor';
+import { isAtcDefaultStorageVlan, type AreaPurpose } from '@/types/topology';
 
 function PickerDefEditor({ label, items, onChange }: { label: string; items: PickerDef[]; onChange: (next: PickerDef[]) => void }) {
   const dragIndex = useRef<number | null>(null);
@@ -225,6 +227,7 @@ export default function InspectorPanel() {
                   if (spec) {
                     updateArea(selectedArea.id, {
                       vlanId: spec.vlanId,
+                      purpose: spec.areaPurpose,
                       label: spec.name,
                       cidr: spec.cidr,
                       mtu: spec.mtu,
@@ -241,6 +244,31 @@ export default function InspectorPanel() {
                   <option key={v.vlanId} value={v.vlanId}>VLAN {v.vlanId} - {v.name.split('(')[1]?.replace(')', '') || v.name}</option>
                 ))}
               </select>
+            </label>
+            <label className="field">
+              <span>Network purpose</span>
+              <select value={selectedArea.purpose ?? ''} onChange={(e) => updateArea(selectedArea.id, { purpose: (e.target.value || undefined) as AreaPurpose | undefined })}>
+                <option value="">Auto (from label)</option>
+                <option value="management">Management</option>
+                <option value="compute">Compute / tenant VMs</option>
+                <option value="storage">Storage (SMB Direct)</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label className="field">
+              <span>VLAN ID (custom allowed)</span>
+              <input
+                type="number"
+                min={1}
+                max={4094}
+                value={selectedArea.vlanId ?? ''}
+                onChange={(e) => updateArea(selectedArea.id, { vlanId: e.target.value ? Number(e.target.value) : undefined })}
+              />
+              {isAtcDefaultStorageVlan(selectedArea.vlanId) && selectedArea.purpose !== undefined && selectedArea.purpose !== 'storage' && selectedArea.purpose !== 'other' && (
+                <small role="status" style={{ color: '#fbbf24' }}>
+                  VLAN {selectedArea.vlanId} is a Network ATC storage default (711 to 719). Allowed, but set StorageVlans explicitly or pick another ID.
+                </small>
+              )}
             </label>
             <div className="field-row">
               <label className="field">
@@ -406,6 +434,7 @@ export default function InspectorPanel() {
                 })}
               </div>
             </label>
+            <NetworkIntentEditor node={selectedNode} />
             <label className="field">
               <span>SET Teams (Hyper-V / Azure Local)</span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

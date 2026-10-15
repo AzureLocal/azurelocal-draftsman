@@ -1,25 +1,28 @@
-# Cabling Schedule CSV & Switch Port Map Exporters
+# Cable schedule and switch port map exporters
 
-Azure Local Draftsman allows datacenter engineers to export production-ready installation manifests directly from diagram topologies.
+Draftsman exports production-ready installation manifests directly from the diagram. The exporters are pure functions (`buildCableScheduleCsv`, `buildSwitchPortMap`, `buildDrawio`) covered by content tests.
 
----
+## 1. Cable schedule (CSV)
 
-## 1. Cabling Schedule (CSV)
+One row per cable, in diagram order, for the technicians wiring the racks. UTF-8, RFC 4180 quoting; a cell that starts with `=`, `+`, `-`, `@`, tab or CR gets a leading apostrophe so a spreadsheet does not run it as a formula.
 
-The **Cabling Schedule CSV** export provides a line-by-line physical cable manifest for datacenter technicians wiring racks.
+| Column | Example |
+|---|---|
+| `Cable_Tag` | `CBL-001` (or the cable tag label) |
+| `Source_Device` | `Node-1 (AX-760)` |
+| `Source_Port` | `OCP-P1` (`Front Face` when no port is set) |
+| `Target_Device` | `Arista 7050SX3 (ToR-A)` |
+| `Target_Port` | `Eth1` |
+| `Cable_Medium` | `DAC (Direct Attach Copper)` |
+| `Speed_Gbps` | `25G / 100G` |
+| `VLAN_ID` | `VLAN 7` or `Untagged` |
+| `Intent` | Network ATC intent of the host port, e.g. `Management_Compute` |
+| `Notes` | free text |
 
-### Export Format Columns
+## 2. Switch port map (TXT)
 
-1. `Cable ID` (e.g. `CBL-1001`)
-2. `Source Entity` (e.g. `Node-1 (Dell AX-760)`)
-3. `Source Port` (e.g. `pNIC1 / Port 1`)
-4. `Destination Switch` (e.g. `Arista 7050SX3 (ToR-A)`)
-5. `Destination Port` (e.g. `Ethernet1`)
-6. `Cable Media` (e.g. `25GbE DAC`, `100GbE MMF`)
-7. `VLAN Tag` (e.g. `VLAN 711`)
+One block per switch or console server: model, role, zone and trunk VLANs (when set), then each port with the device and port on the other end and the VLAN tag (`Trunk/Native` when untagged). Use it to prepare the switch CLI trunk profiles.
 
----
+## 3. draw.io
 
-## 2. Switch Port Provisioning Map (TXT)
-
-The **Switch Port Map TXT** export formats port allocations for network engineers configuring switch CLI trunk profiles (Arista EOS / Cisco NX-OS).
+`Export > Cabling Topology (draw.io)` writes an uncompressed `.drawio` file. See [draw.io export](drawio-export.md).

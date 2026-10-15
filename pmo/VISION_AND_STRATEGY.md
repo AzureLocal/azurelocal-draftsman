@@ -25,7 +25,7 @@ Solutions Engineers, Systems Architects, Datacenter Ops, and Network Consultants
 - **Physical Redundancy Auditing:** Visualizing dual-homed connections, LACP trunks, and cross-chassis MLAG / vPC links.
 
 ### 3. Logical Network & Security Topologies
-- **VLAN & Subnet Mapping:** Overlaying logical subnets, VLAN IDs (e.g. VLAN 711 Management, VLAN 712 Storage1, VLAN 713 Storage2, VLAN 714 Compute), and CIDR blocks over physical switches and hosts.
+- **VLAN & Subnet Mapping:** Overlaying logical subnets, VLAN IDs (e.g. VLAN 7 Management, VLAN 8 Compute, Network ATC storage VLANs 711, 712, 713), and CIDR blocks over physical switches and hosts.
 - **Firewall & Proxy Perimeter Flows:** Step-by-step traffic inspection showing HTTP/HTTPS egress, Arc Gateway allowed endpoints, proxy bypass paths, and private endpoint routing.
 - **SD-WAN & Hybrid Cloud Connectivity:** ExpressRoute circuits, Site-to-Site VPN tunnels, Azure Arc Gateways, and multi-cloud interconnects.
 

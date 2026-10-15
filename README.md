@@ -1,167 +1,82 @@
-# Azure Local Draftsman — Interactive 2.5D Infrastructure & Compliance Studio
+# Azure Local Draftsman
 
-[![Validate](https://github.com/AzureLocal/azurelocal-draftsman/actions/workflows/validate.yml/badge.svg)](https://github.com/AzureLocal/azurelocal-draftsman/actions/workflows/validate.yml)
-[![Deploy](https://github.com/AzureLocal/azurelocal-draftsman/actions/workflows/deploy.yml/badge.svg)](https://github.com/AzureLocal/azurelocal-draftsman/actions/workflows/deploy.yml)
+[![CI and Pages](https://github.com/AzureLocal/azurelocal-draftsman/actions/workflows/ci-pages.yml/badge.svg)](https://github.com/AzureLocal/azurelocal-draftsman/actions/workflows/ci-pages.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Azure Local Draftsman** is a free, open-source, browser-based 2.5D visual architecture editor and pre-flight compliance auditor purpose-built for **Azure Local** and **Hyper-V** network infrastructure deployments.
+**Azure Local Draftsman is a free, browser-based cabling and compliance diagramming tool for Azure Local network architectures.** Draw the servers, top-of-rack (ToR) and out-of-band (OOB) switches, pin-level cables, VLANs and Network ATC intents of a cluster on a 2.5D isometric canvas, let the auditor check the design against the Microsoft Learn network patterns, and export the cable schedule and the switch port map your technicians and network engineers work from.
 
-It renders physical hardware components — Dell PowerEdge servers, Arista/Cisco ToR switches, Opengear console servers, and logical HCI VLAN boundaries — as 2.5D isometric shapes on a sleek dark-themed canvas, connected by pin-level port cables. The tool helps infrastructure architects, systems engineers, and datacenter technicians design, validate, and export production cabling manifests.
+> No sign-up. No server. Everything runs in your browser; diagrams stay in your browser storage until you export them.
 
-> **No sign-up. No server. Runs entirely in your browser.**
+**Open it: <https://azurelocal.cloud/azurelocal-draftsman/>** (documentation: <https://azurelocal.cloud/azurelocal-draftsman/docs/>)
 
-![Azure Local Public Path — Proxy + Arc Gateway scenario](docs/screenshot-public-path-proxy-arc.png)
+The Learn references were checked against Azure Local 12.2609 (latest).
 
-## Live Portal
+![Draftsman canvas](docs/screenshot-public-path-proxy-arc.png)
 
-**Try it now: [https://azurelocal.cloud/azurelocal-draftsman/](https://azurelocal.cloud/azurelocal-draftsman/)**
+## What it does
 
-## Why Azure Local Draftsman?
+| Area | Capability |
+|------|------------|
+| **Design** | Dell, Arista, Cisco, Nvidia and Opengear hardware profiles with real port groups; pin-level cables (DAC, MMF, SMF, Cat6A, RS-232) with VLAN tags; SET teams; logical networks (VLAN, CIDR, MTU). |
+| **Patterns** | Switched storage on one MLAG ToR pair, switchless storage (1 to 4 nodes), and rack-aware clusters (two zones). |
+| **Network ATC** | Per-host intents: group-all, management plus compute with a dedicated storage intent, or disaggregated (three intents). |
+| **Wizard** | Generates a fully cabled, audit-clean design for 2 and 3 node switchless, 4 and 8 node switched, and 4 and 8 node rack-aware clusters. |
+| **Auditor** | 16 pattern-aware rules, each linked to its Microsoft Learn source, shown live as canvas badges and in the audit drawer. See [compliance-auditor](docs/compliance-auditor.md). |
+| **Exports** | Cable schedule CSV, switch port map TXT, draw.io (`.drawio`), PNG, SVG, PDF, interactive HTML and JSON. |
 
-Azure Local deployments involve complex traffic flows across on-premises infrastructure and Azure cloud services. Understanding how traffic routes through proxies, Arc gateways, private endpoints, and public paths is critical for security reviews, architecture decisions, and stakeholder communication.
+### Network ATC defaults the tool follows
 
-AzLoFlows solves this by providing:
+Network ATC assigns storage VLANs 711, 712, 713 and up by default (10.71.1.0/24, 10.71.2.0/24, 10.71.3.0/24). Draftsman uses those for storage, so a diagram matches what Network ATC will configure. Management and compute VLANs are not set by Network ATC; the tool ships example values (7 and 8) and warns, without blocking, when you put a non-storage network on 711 to 719. See [Network ATC intents](docs/network-atc-intents.md).
 
-- **Predefined scenarios** for common Azure Local architectures (Public Path, Private Path) — load a complete diagram in one click
-- **Interactive filtering** — toggle scenarios (proxy/no-proxy, with/without Arc) and traffic sources (Hosts, ARB, AKS, VMs) to see exactly which flows are affected
-- **A general-purpose isometric diagramming tool** — build custom diagrams for any cloud architecture, not just Azure Local
-- **Export-ready output** — PNG, SVG, JSON, and interactive HTML exports for documentation, presentations, and Visio alternatives
-
-## Features
-
-### Isometric Canvas
-
-- Pan, zoom, snap-to-grid, and drag-to-move editing on an isometric projection
-- Flat grouping areas rendered as isometric surfaces (e.g., "On-Premises", "Azure Cloud")
-- Raised node cards with color-coded glow effects and Azure-themed icons
-- Connectors with labels, animated flow particles, and routed waypoints
-- Pipe entities for representing network segments
-- Freely placeable text labels with rotation support
-
-### Scenario-Based Flow Visualization
-
-- **Predefined scenarios**: Load ready-made diagrams for Azure Local Public Path and Private Path architectures
-- **Scenario picker**: Toggle between configurations — No Proxy/No Arc, Proxy only, Arc only, Proxy + Arc
-- **Traffic source filtering**: Show flows from Hosts, ARB, AKS, VMs, or any combination
-- **Traffic type filtering**: Filter by HTTP/third-party endpoints, Arc gateway allowed endpoints, Azure Private Endpoints, bypass routes, and non-allowed Azure public endpoints
-- **Tag-based visibility**: Each entity and connector is tagged, so filtering dynamically shows/hides the relevant parts of the diagram
-
-### Diagram Editing
-
-- **Shape palette**: 14 shape types — flat area, node, standing node, server rack, card, platform, browser, dashboard, storage, chart panel, analytics panel, text label, and pipe
-- **Component templates**: Pre-configured Azure node types (Firewall, Proxy, Arc Gateway, AKS, VMs, VNET, DNS, Key Vault, Private Endpoint, etc.)
-- **Inspector panel**: Edit properties — color, label, subtitle, size, icon, tags, notes, and anchors
-- **Layers panel**: Reorder and manage entity draw order with type filtering
-- **Connectors**: Connect nodes via anchor points with animated dashed or solid lines and flow direction
-- **Snap alignment guides**: Smart snapping when dragging entities near each other
-- **Undo/redo**: Full history stack with Ctrl+Z / Ctrl+Shift+Z
-- **Minimap**: Quick navigation overlay for large diagrams
-- **Search**: Find entities by name (Ctrl+F)
-
-### Export & Persistence
-
-| Format | Description |
-|--------|-------------|
-| **PNG** | Raster export with preview dialog, download, or Save As |
-| **SVG** | Vector export preserving isometric rendering, glow effects, and flow animations |
-| **JSON** | Full document serialization for sharing, version control, and backup |
-| **Interactive HTML** | Self-contained HTML file with embedded diagram and scenario controls |
-| **Auto-save** | Diagrams persist to browser localStorage automatically |
-| **Present mode** | Hide all UI for clean full-screen presentations (Ctrl+P) |
-
-### Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| Ctrl+S | Save to browser storage |
-| Ctrl+Z / Ctrl+Shift+Z | Undo / Redo |
-| Ctrl+C / Ctrl+V | Copy / Paste |
-| Ctrl+D | Duplicate selection |
-| Delete | Delete selection |
-| Ctrl+0 | Fit diagram to screen |
-| Ctrl+1 | Zoom to 100% |
-| Ctrl+F | Search entities |
-| Ctrl+P | Toggle present mode |
-| Arrow keys | Nudge selection (Shift for larger steps) |
-| Space+Drag | Pan canvas |
-| ? | Toggle shortcut help |
-
-### Theming
-
-- Dark and light theme toggle
-- Glassmorphic UI panels with blur and glow effects
-- 14 pre-defined color swatches
-
-## Getting Started
-
-### Use Online
-
-Open the [live demo](https://cristianedwards.github.io/AzLoFlows/) — no installation required. Your diagrams save to your browser's localStorage.
-
-### Run Locally
+## Run it locally
 
 ```bash
-git clone https://github.com/CristianEdwards/AzLoFlows.git
-cd AzLoFlows
-npm install
-npm run dev          # http://localhost:8125/AzLoFlows/
+git clone https://github.com/AzureLocal/azurelocal-draftsman.git
+cd azurelocal-draftsman
+npm ci
+npm run dev          # http://localhost:8125/
 ```
-
-### Build for Production
 
 ```bash
-npm run build        # TypeScript check + Vite build → dist/
-npm run preview      # Preview the production build locally
-npm test             # Run unit tests (Vitest)
+npm run lint         # ESLint
+npm test             # Vitest
+npm run build        # type check + Vite build into dist/ (base /azurelocal-draftsman/)
+npm run build:site   # app + VitePress docs assembled for GitHub Pages (docs under /docs/)
 ```
+
+Pushes to `main` run the `ci-pages` workflow (lint, test, audit, build) and deploy the assembled site to GitHub Pages.
 
 ## Architecture
 
 ```
 src/
-├── app/                  # Shell layout (AppShell, TopToolbar, StatusBar)
-├── components/ui/        # Shared UI components (Button, ErrorBoundary, Toast)
+├── app/                  # Shell layout (top toolbar, status bar)
 ├── features/
-│   ├── canvas/           # CanvasViewport, ContextMenu, Minimap, overlays
-│   │   └── renderers/    # Shape renderers (node, area, pipe, connector, etc.)
-│   ├── export/           # PNG, SVG, JSON, HTML export logic
-│   ├── inspector/        # Property editor panel
-│   ├── layers/           # Layer ordering panel
-│   ├── palette/          # Shape palette and component templates
-│   ├── scenarios/        # Predefined scenario picker and toolbar
-│   └── templates/        # Starter templates and gallery
+│   ├── canvas/           # Viewport, overlays, renderers (switch, server, OOB, connector, area)
+│   ├── export/           # Cable schedule CSV, switch port map, draw.io, PNG/SVG/PDF/HTML/JSON
+│   ├── inspector/        # Property editor, Network ATC intent editor
+│   ├── palette/          # Hardware palette and preset stacks
+│   ├── validation/       # Auditor (rules/ = one module per rule group) and audit drawer
+│   ├── wizard/           # Guided setup and the pure topology builder
+│   └── ...               # layers, templates, landing page, traffic-flow scenarios (upstream)
 ├── lib/
-│   ├── geometry/         # Isometric projection, grid, bounds, routing, anchors
-│   ├── icons/            # Azure-themed SVG node icons
-│   ├── rendering/        # Design tokens and canvas primitives
-│   └── serialization/    # Document storage and normalization
-├── state/                # Zustand store (document, UI, undo/redo, actions)
-├── styles/               # Global CSS with dark/light theme tokens
-└── types/                # TypeScript type definitions
+│   ├── geometry/         # Isometric projection, anchors, routing
+│   ├── serialization/    # Document storage, normalization and migration
+│   └── topology/         # Pure analysis helpers shared by the rules
+├── state/                # Zustand store, undo/redo
+└── types/                # Document model, hardware profiles, cabling, topology, validation
 ```
 
-**Key design decision**: The document stores logical flat coordinates. Projection into isometric screen space only happens during rendering and hit testing, keeping serialization and editing rules stable regardless of visual perspective.
+The document stores flat logical coordinates; isometric projection happens only when rendering. The auditor, wizard builder and exporters are pure functions of the document, which is what makes them unit-testable.
 
-## Tech Stack
+## Origin and licence
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 19, TypeScript 5.8 (strict mode) |
-| State | Zustand 5.0 |
-| Rendering | Canvas 2D API with custom isometric projection |
-| Build | Vite 6 |
-| Tests | Vitest 3 |
-| CI/CD | GitHub Actions (lint, type-check, build, test) |
-| Hosting | GitHub Pages |
+Draftsman started as a fork of **[AzLoFlows](https://github.com/CristianEdwards/AzLoFlows)** by Cristian Edwards Sabathe (MIT). The isometric canvas, projection helpers, visual tokens and the scenario-based traffic-flow diagrams (still available under Templates and Scenarios) come from that project. This repository narrows the product to cabling and compliance for Azure Local. The original copyright notice and the MIT licence are kept in [LICENSE](LICENSE).
 
-## Contributing
+## Contributing and security
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow, coding conventions, and pull request guidelines.
-
-## Security
-
-See [SECURITY.md](SECURITY.md) for vulnerability reporting and security considerations.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Agent and tooling conventions are in [AGENTS.md](AGENTS.md).
 
 ## License
 
-[MIT](LICENSE) — free for personal and commercial use.
+[MIT](LICENSE).

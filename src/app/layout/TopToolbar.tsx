@@ -6,6 +6,7 @@ import ExportPreviewDialog from '@/features/export/ExportPreviewDialog';
 import { exportDocumentAsJson, exportDocumentAsJsonSaveAs, exportDocumentAsSvg, exportDocumentAsSvgSaveAs, exportDocumentAsPdf, exportDocumentAsHtml, importDocumentFromFile } from '@/features/export/fileActions';
 import { exportCableScheduleCsv } from '@/features/export/exportCableScheduleCsv';
 import { exportSwitchPortMap } from '@/features/export/exportSwitchPortMap';
+import { exportDrawio } from '@/features/export/exportDrawio';
 import KeyboardShortcutsDialog from '@/features/canvas/KeyboardShortcutsDialog';
 import SearchDialog from '@/features/canvas/SearchDialog';
 import TemplateGalleryDialog from '@/features/templates/TemplateGalleryDialog';
@@ -175,6 +176,7 @@ export default function TopToolbar({ canvasRef, viewport }: TopToolbarProps) {
     { separator: true as const },
     { label: 'Export Cabling Schedule (CSV)', onClick: () => exportCableScheduleCsv(document) },
     { label: 'Export Switch Port Map (TXT)', onClick: () => exportSwitchPortMap(document) },
+    { label: 'Export Cabling Topology (draw.io)', onClick: () => exportDrawio(document) },
     { separator: true as const },
     { label: 'PDF document', onClick: () => exportDocumentAsPdf(canvasRef.current, `${document.name.toLowerCase().replace(/\s+/g, '-')}.pdf`) },
     { label: 'Interactive HTML', onClick: () => exportDocumentAsHtml(document, camera, viewport, tagFilter, theme) },
@@ -252,7 +254,7 @@ export default function TopToolbar({ canvasRef, viewport }: TopToolbarProps) {
 
       <input ref={inputRef} hidden type="file" accept="application/json" onChange={onImportFile} />
       {pngPreview && canvasEl && (
-        <ExportPreviewDialog canvas={canvasEl} fileName="azloflows-diagram.png" onClose={() => setPngPreview(false)} />
+        <ExportPreviewDialog canvas={canvasEl} fileName="draftsman-diagram.png" onClose={() => setPngPreview(false)} />
       )}
       {showShortcuts && <KeyboardShortcutsDialog onClose={() => setShowShortcuts(false)} />}
       {showSearch && <SearchDialog onClose={() => setShowSearch(false)} />}

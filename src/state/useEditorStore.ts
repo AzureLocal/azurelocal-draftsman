@@ -36,6 +36,8 @@ import { getDocScenarios, getDocFlowSourceRules } from '@/types/document';
 import { loadDocument, normalizeDocument } from '@/lib/serialization/storage';
 import type { ViewMode } from '@/types/logicalNetwork';
 import { buildWizardDocument, type WizardTopologyConfig } from '@/features/wizard/buildTopology';
+import { isHostNode, resolveCluster } from '@/lib/topology/analysis';
+import type { ClusterDesign } from '@/types/topology';
 
 type ClipboardPayload =
   | { type: 'area'; entities: AreaEntity[] }
@@ -116,6 +118,10 @@ interface EditorStore {
   _insertClipboardPayload: (clipboard: ClipboardPayload, stripTags: boolean) => void;
   batchUpdate: (patch: { glowColor?: string; fontSize?: number; tags?: string[] }) => void;
   updateDocumentDefs: (patch: { scenarios?: PickerDef[]; flowSources?: PickerDef[]; flowTypes?: PickerDef[]; scenarioFlowTypeExclusions?: Record<string, string[]>; sourceFlowTypeExclusions?: Record<string, string[]>; flowSourceRules?: FlowSourceRules }) => void;
+  /** Merge into the cluster design (pattern, storage, RDMA...); null clears it so the auditor infers it from the cabling. */
+  updateCluster: (patch: Partial<ClusterDesign> | null) => void;
+  /** Copy one host's Network ATC intents to every host node (intents are cluster-wide). */
+  applyIntentsToAllHosts: (sourceNodeId: string) => void;
   fitToScreen: (viewportWidth: number, viewportHeight: number) => void;
   zoomToSelection: (viewportWidth: number, viewportHeight: number) => void;
 }
@@ -1014,6 +1020,27 @@ export const useEditorStore = create<EditorStore>((set: any, get: any) => ({
     set((state) => {
       const document = { ...state.document, ...patch };
       return { document, history: withCommittedHistory(state.history, state.document) };
+    });
+  },
+  updateCluster: (patch) => {
+    set((state) => {
+      const history = withCommittedHistory(state.history, state.document);
+      if (patch === null) return { history, document: { ...cloneDocument(state.document), cluster: undefined } };
+      const current = resolveCluster(state.document);
+      return { history, document: { ...cloneDocument(state.document), cluster: { ...current, ...patch } } };
+    });
+  },
+  applyIntentsToAllHosts: (sourceNodeId) => {
+    set((state) => {
+      const source = state.document.nodes.find((n) => n.id === sourceNodeId);
+      if (!source?.intents) return {};
+      return {
+        history: withCommittedHistory(state.history, state.document),
+        document: {
+          ...cloneDocument(state.document),
+          nodes: state.document.nodes.map((n) => (isHostNode(n) ? { ...n, intents: source.intents!.map((i) => ({ ...i, portIds: [...i.portIds], traffic: [...i.traffic] })) } : n)),
+        },
+      };
     });
   },
   fitToScreen: (viewportWidth, viewportHeight) => {

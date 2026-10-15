@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useEditorStore } from '@/state/useEditorStore';
 import LandingHeader, { type LandingTab } from '@/features/landing/LandingHeader';
+import { COMPLIANCE_RULES } from '@/types/validation';
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<LandingTab>('home');
@@ -149,7 +150,7 @@ export default function LandingPage() {
                 {
                   icon: '🌐',
                   title: 'Logical HCI VLAN Boundaries',
-                  desc: 'Multi-layer view HUD ([ 🔌 Physical ], [ 🌐 Logical ], [ 🔀 Hybrid ]) with overlaid HCI VLAN zones (Management 711, Compute 712, Storage 713/714) and MTU 9000 badges.',
+                  desc: 'Multi-layer view HUD ([ 🔌 Physical ], [ 🌐 Logical ], [ 🔀 Hybrid ]) with overlaid VLAN zones (example management 7 and compute 8, Network ATC storage 711/712/713) and MTU 9000 badges.',
                 },
                 {
                   icon: '🛡️',
@@ -256,10 +257,10 @@ export default function LandingPage() {
                       Architecture Platform & Mission
                     </div>
                     <h2 style={{ fontSize: '32px', fontWeight: 900, margin: '0 0 12px', color: isLight ? '#0f172a' : '#ffffff', letterSpacing: '-0.5px' }}>
-                      About AzLoFlows
+                      About Draftsman
                     </h2>
                     <p style={{ fontSize: '16px', color: isLight ? '#475569' : '#94a3b8', lineHeight: 1.6, margin: 0 }}>
-                      AzLoFlows is an open-source, interactive 2.5D visual architecture editor and pre-flight compliance engine designed specifically for <strong>Azure Local HCI</strong> and <strong>Hyper-V network infrastructure</strong> deployments.
+                      Draftsman is an open-source, browser-based cabling and compliance diagramming tool for <strong>Azure Local</strong> network architectures: switched, switchless and rack-aware, with Network ATC intents checked against Microsoft Learn.
                     </p>
                   </div>
 
@@ -282,7 +283,7 @@ export default function LandingPage() {
                       Deploying enterprise Azure Local HCI clusters requires strict adherence to physical cabling topology, dual Top-of-Rack (ToR) switch cross-connects, Switch Embedded Teaming (SET) port distribution, and Storage Spaces Direct (S2D) RoCEv2 RDMA traffic isolation. Manual wiring spreadsheets and static 2D diagrams frequently lead to misconfigured ports, single points of failure, and costly deployment delays.
                     </p>
                     <p style={{ fontSize: '14px', color: isLight ? '#334155' : '#cbd5e1', lineHeight: 1.7, margin: 0 }}>
-                      AzLoFlows bridges the gap between high-level architectural planning and ground-level physical installation by providing real-time 2.5D canvas visualization, instant compliance validation, and automated cabling schedule exports.
+                      Draftsman bridges the gap between high-level architectural planning and ground-level physical installation by providing real-time 2.5D canvas visualization, instant compliance validation, and automated cabling schedule exports.
                     </p>
                   </div>
 
@@ -299,11 +300,11 @@ export default function LandingPage() {
                         },
                         {
                           title: '🛡️ Automated Compliance Auditor',
-                          desc: 'Real-time rule engine evaluating topologies against 5 mandatory network standards (dual-ToR redundancy, storage MTU 9000, SET port balance, and OOB management).',
+                          desc: 'Real-time rule engine with 16 pattern-aware rules (ToR redundancy, switchless mesh, rack-aware zones, VLAN alignment, Network ATC intents, storage MTU, SET balance, OOB), each linked to Microsoft Learn.',
                         },
                         {
                           title: '🌐 Multi-Layer View Isolation',
-                          desc: 'Multi-layer HUD enabling instant switching between physical port wiring and logical HCI VLAN boundaries (Management 711, Compute 712, Storage 713/714).',
+                          desc: 'Multi-layer HUD enabling instant switching between physical port wiring and logical HCI VLAN boundaries (example management 7 and compute 8, Network ATC storage 711/712/713).',
                         },
                         {
                           title: '📄 Datacenter Handoff Exporters',
@@ -339,7 +340,7 @@ export default function LandingPage() {
                       Official Version Documentation
                     </div>
                     <h2 style={{ fontSize: '28px', fontWeight: 900, margin: '0 0 8px', color: isLight ? '#0f172a' : '#ffffff' }}>
-                      📋 Release Notes — AzLoFlows v0.9.0-preview
+                      📋 Release Notes — Draftsman v0.2.0
                     </h2>
                     <p style={{ fontSize: '15px', color: isLight ? '#475569' : '#94a3b8', lineHeight: 1.6, margin: 0 }}>
                       Comprehensive release documentation detailing the enterprise infrastructure architecture, hardware catalog extensions, pre-flight compliance auditor engine, and reporting exporters.
@@ -379,8 +380,8 @@ export default function LandingPage() {
                         summary: 'Multi-layer view toggling between physical wiring and logical HCI VLAN boundaries.',
                         details: [
                           'View Mode Toolbar: Floating HUD supporting [ 🔌 Physical ], [ 🌐 Logical ], and [ 🔀 Hybrid ] view modes.',
-                          'Logical HCI VLAN Profiles: Overlaid boundary glow zones for Management (VLAN 711), Compute (VLAN 712), Storage 1 (VLAN 713), and Storage 2 (VLAN 714).',
-                          'CIDR & MTU Badges: Subnet CIDR tags (10.0.10.0/24) and Jumbo Frames MTU 9000 indicators.',
+                          'Logical HCI VLAN Profiles: Overlaid boundary glow zones for Management (example VLAN 7), Compute (example VLAN 8), and Storage 1 to 3 (Network ATC defaults VLAN 711, 712, 713).',
+                          'CIDR & MTU Badges: Subnet CIDR tags (10.71.1.0/24) and Jumbo Frames MTU 9000 indicators.',
                         ],
                       },
                       {
@@ -451,6 +452,7 @@ export default function LandingPage() {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {[
+                      { version: 'v0.2.0', date: 'October 2026', title: 'Cabling and compliance tool: patterns, intents, rack-aware', points: ['16 pattern-aware auditor rules with Microsoft Learn references', 'Switchless, switched single-rack and rack-aware patterns; Network ATC intents; storage VLAN defaults 711/712/713', 'Wizard presets, draw.io export, cable schedule intent column, GitHub Pages deployment'] },
                       { version: 'v0.9.0-preview', date: 'July 2026', title: 'Enterprise Portal, Vertical About Menu & Setup Wizard', points: ['Built Landing Portal with vertical Left Sidebar Navigation for Release Notes, Change Logs, Roadmap, and Credits', 'Built 5-Step Guided Architecture Setup Wizard for 2/4/8-node Dell cluster generation', 'Created PMO Backlog (pmo/BACKLOG.md) and Site Audit (pmo/COMPREHENSIVE_SITE_AUDIT.md)', 'Added active development notice banner and open-source upstream credits'] },
                       { version: 'v0.8.5-preview', date: 'July 2026', title: 'Phase 5 Cabling CSV & Port Map TXT Exporters', points: ['Implemented exportCableScheduleCsv.ts for technician cabling manifests', 'Implemented exportSwitchPortMap.ts for network engineer CLI trunk specs', 'Integrated CSV and TXT download options in top Export menu'] },
                       { version: 'v0.8.0-preview', date: 'July 2026', title: 'Phase 4 Pre-Flight Compliance Auditor Engine', points: ['Created diagramAuditor.ts evaluating 5 core network compliance rules', 'Added pulsating red/yellow alert canvas badges (renderValidationBadges.ts)', 'Built collapsible audit drawer UI (CompliancePanel.tsx)'] },
@@ -483,16 +485,16 @@ export default function LandingPage() {
                       🗺️ Product Roadmap
                     </h2>
                     <p style={{ fontSize: '15px', color: isLight ? '#475569' : '#94a3b8', margin: 0 }}>
-                      Upcoming features and platform integrations planned for future releases.
+                      Planned work. Items are not committed dates.
                     </p>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                     {[
-                      { quarter: 'Q3 2026', title: '🔮 Azure Bicep & ARM Generator', desc: 'Automatically export Azure Local deployment template artifacts (`infra.bicep` and `parameters.json`) directly from verified diagram state.' },
-                      { quarter: 'Q3 2026', title: '⚡ Azure DevOps Pipeline Extension', desc: 'CI/CD task to automatically run Pre-Flight Compliance Auditor during ADO pull requests containing architecture changes.' },
-                      { quarter: 'Q4 2026', title: '📡 Live Telemetry & SNMP Sync', desc: 'Sync live link speed and power status from Dell iDRAC eAPI and Arista eAPI telemetry directly into the canvas.' },
-                      { quarter: 'Q4 2026', title: '🗺️ Multi-Rack Datacenter Layout', desc: 'Expand isometric canvas to support multi-row datacenter floor racks and inter-rack fiber trunking.' },
+                      { quarter: 'Next', title: '🗄️ Rack Elevation Diagrams', desc: 'Auto-layout 19-inch rack elevations from node rack coordinates (U1 to U42).' },
+                      { quarter: 'Next', title: '📏 Cable Lengths in the Schedule', desc: 'Capture cable length and add it to the cable schedule CSV.' },
+                      { quarter: 'Next', title: '🎞️ Traffic Flow Player', desc: 'Step-by-step playback of animated paths from a node through the ToR switches to its destination.' },
+                      { quarter: 'Later', title: '🧩 Switch QoS Snippets', desc: 'Reference PFC and ETS configuration snippets for the ToR ports the auditor flags as RoCE-carrying.' },
                     ].map((item, i) => (
                       <div key={i} style={{ background: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.02)', border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(0, 229, 255, 0.2)', borderRadius: '14px', padding: '20px' }}>
                         <span style={{ fontSize: '11px', fontWeight: 700, color: isLight ? '#0284c7' : '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px' }}>{item.quarter}</span>
@@ -515,7 +517,7 @@ export default function LandingPage() {
                       ❤️ Credits & Open-Source Acknowledgements
                     </h2>
                     <p style={{ fontSize: '15px', color: isLight ? '#475569' : '#94a3b8', lineHeight: 1.6, margin: 0 }}>
-                      AzLoFlows is built on open-source software. We express our deep gratitude to the upstream creators, framework authors, and contributors.
+                      Draftsman is built on open-source software. We express our deep gratitude to the upstream creators, framework authors, and contributors.
                     </p>
                   </div>
 
@@ -578,7 +580,7 @@ export default function LandingPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             <div>
               <h2 style={{ fontSize: '28px', fontWeight: 800, margin: '0 0 8px', color: '#00e5ff' }}>
-                AzLoFlows Documentation & Technical Standards Guide
+                Draftsman Documentation & Technical Standards Guide
               </h2>
               <p style={{ fontSize: '15px', color: '#94a3b8', margin: 0 }}>
                 Comprehensive reference guides for Azure Local physical network wiring, logical HCI VLAN isolation, and auditor validation rules.
@@ -666,27 +668,27 @@ export default function LandingPage() {
                     <tbody style={{ color: '#cbd5e1' }}>
                       <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <td style={{ padding: '10px', fontWeight: 700 }}>Management Network</td>
-                        <td style={{ padding: '10px' }}>VLAN 711</td>
+                        <td style={{ padding: '10px' }}>VLAN 7 (example)</td>
                         <td style={{ padding: '10px' }}>MTU 1500</td>
                         <td style={{ padding: '10px' }}>Host OS management, Arc agent, & WAC communication</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <td style={{ padding: '10px', fontWeight: 700 }}>Compute / VM Traffic</td>
-                        <td style={{ padding: '10px' }}>VLAN 712</td>
-                        <td style={{ padding: '10px' }}>MTU 1500 / 9000</td>
+                        <td style={{ padding: '10px' }}>VLAN 8 (example)</td>
+                        <td style={{ padding: '10px' }}>MTU 1500</td>
                         <td style={{ padding: '10px' }}>Virtual Machine tenant networks & Hyper-V vSwitch</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <td style={{ padding: '10px', fontWeight: 700 }}>Storage 1 (RoCEv2)</td>
-                        <td style={{ padding: '10px' }}>VLAN 713</td>
-                        <td style={{ padding: '10px', color: '#10b981', fontWeight: 700 }}>MTU 9000 (Jumbo)</td>
-                        <td style={{ padding: '10px' }}>Storage Spaces Direct (S2D) RDMA fabric 1</td>
+                        <td style={{ padding: '10px' }}>VLAN 711 (Network ATC default)</td>
+                        <td style={{ padding: '10px', color: '#10b981', fontWeight: 700 }}>MTU 9000 (recommended)</td>
+                        <td style={{ padding: '10px' }}>Storage Spaces Direct (S2D) RDMA, storage adapter 1</td>
                       </tr>
                       <tr>
                         <td style={{ padding: '10px', fontWeight: 700 }}>Storage 2 (RoCEv2)</td>
-                        <td style={{ padding: '10px' }}>VLAN 714</td>
-                        <td style={{ padding: '10px', color: '#10b981', fontWeight: 700 }}>MTU 9000 (Jumbo)</td>
-                        <td style={{ padding: '10px' }}>Storage Spaces Direct (S2D) RDMA fabric 2</td>
+                        <td style={{ padding: '10px' }}>VLAN 712 (Network ATC default)</td>
+                        <td style={{ padding: '10px', color: '#10b981', fontWeight: 700 }}>MTU 9000 (recommended)</td>
+                        <td style={{ padding: '10px' }}>Storage Spaces Direct (S2D) RDMA, storage adapter 2</td>
                       </tr>
                     </tbody>
                   </table>
@@ -699,17 +701,11 @@ export default function LandingPage() {
                     Pre-Flight Compliance Auditor Engine Rules
                   </h3>
                   <p style={{ color: '#cbd5e1', margin: 0 }}>
-                    The compliance auditor validates diagram topologies in real time and highlights misconfigurations with pulsating canvas badges.
+                    The compliance auditor validates diagram topologies in real time against the Microsoft Learn network patterns and highlights misconfigurations with pulsating canvas badges. Severity shown is the highest the rule reports.
                   </p>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {[
-                      { code: 'RULE-TOR-REDUNDANCY', type: '🔴 ERROR', desc: 'Flags host nodes connected to only a single ToR switch. Dual-ToR cross-connect is mandatory.' },
-                      { code: 'RULE-MTU-JUMBO', type: '🟡 WARNING', desc: 'Flags Storage/RDMA paths configured with MTU 1500 instead of Jumbo Frames MTU 9000.' },
-                      { code: 'RULE-SET-PORT-BALANCE', type: '🟡 WARNING', desc: 'Verifies that physical ports in a SET team cross-connect to separate physical switches.' },
-                      { code: 'RULE-VLAN-ALIGNMENT', type: '🔴 ERROR', desc: 'Detects mismatched VLAN tags between hosts and switch trunk ports.' },
-                      { code: 'RULE-OOB-MANAGEMENT', type: 'ℹ️ INFO', desc: 'Verifies server nodes have iDRAC/iLO ports wired to 1G OOB switches or Opengear console servers.' },
-                    ].map((rule) => (
+                    {COMPLIANCE_RULES.map((r) => ({ code: r.id, type: r.severity === 'error' ? '🔴 ERROR' : r.severity === 'warning' ? '🟡 WARNING' : 'ℹ️ INFO', desc: r.description })).map((rule) => (
                       <div key={rule.code} style={{ background: 'rgba(0,0,0,0.3)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontWeight: 800, color: '#00e5ff', fontSize: '14px' }}>{rule.code}</span>

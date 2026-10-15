@@ -23,7 +23,7 @@ Users can toggle viewport layer modes using single-click controls in the top can
 | Layer View Mode | Visible Canvas Elements | Hidden Elements | Primary Target Use Case |
 |---|---|---|---|
 | **Physical View (`physical`)** | Hardware chassis (Switches, Servers, Opengear), Physical Cables (DAC, MMF, Cat6A), Rack Units, Physical Port Pins. | Virtual Switches, Subnet CIDRs, Logical IP Paths. | Datacenter racking, physical cabling runs, cable schedule validation. |
-| **Logical View (`logical`)** | Virtual Switches (vSwitches), VLAN Boundaries (VLAN 711, 712, 713), Subnet CIDRs, Logical IP Traffic Paths. | Physical Cable Runs, Hardware Port Pins, OOB Serial lines. | Network architecture review, VLAN tagging, IP assignment planning. |
+| **Logical View (`logical`)** | Virtual Switches (vSwitches), VLAN Boundaries (example 7 and 8, storage 711, 712, 713), Subnet CIDRs, Logical IP Traffic Paths. | Physical Cable Runs, Hardware Port Pins, OOB Serial lines. | Network architecture review, VLAN tagging, IP assignment planning. |
 | **Hybrid View (`hybrid`)** | All physical hardware and cables + semi-transparent overlaid Logical VLAN boundaries and CIDR badges. | None. | Comprehensive cross-layer solution presentation. |
 
 ---
@@ -34,20 +34,22 @@ Logical networks define virtual segmentation overlaid on physical infrastructure
 
 ```typescript
 export interface VlanSubnetSpec {
-  vlanId: number;                  // e.g. 711, 712, 713, 714
+  vlanId: number;                  // e.g. 7, 8, 711, 712, 713
   name: string;                    // e.g. 'Storage1-SMB-Direct'
   cidr: string;                    // e.g. '192.168.11.0/24'
-  purpose: 'management' | 'storage1' | 'storage2' | 'compute' | 'vm-public';
+  purpose: 'management' | 'storage1' | 'storage2' | 'storage3' | 'compute' | 'vm-public';
   colorHex: string;                // Visual boundary fill/border color
   mtu: 1500 | 9000;                // 9000 Jumbo Frames for Storage/RDMA
 }
 ```
 
 ### Standard Azure Local & Hyper-V HCI VLAN Schedule
-- **VLAN 711 (Management):** `192.168.1.0/24` (MTU 1500) - Host Management, WAC, Azure Arc
-- **VLAN 712 (Storage1 / SMB Direct):** `192.168.11.0/24` (MTU 9000) - SMB Direct RDMA (RoCEv2)
-- **VLAN 713 (Storage2 / SMB Direct):** `192.168.12.0/24` (MTU 9000) - SMB Direct RDMA (RoCEv2)
-- **VLAN 714 (Compute / Tenant VMs):** `10.0.0.0/16` (MTU 1500) - Virtual Network / VM traffic
+(Updated in 0.2.0 to the Network ATC defaults: storage 711, 712, 713; management and compute are example values.)
+- **VLAN 7 (Management, example):** `192.168.7.0/24` (MTU 1500) - Host Management, WAC, Azure Arc
+- **VLAN 8 (Compute / Tenant VMs, example):** `10.0.8.0/24` (MTU 1500) - Virtual Network / VM traffic
+- **VLAN 711 (Storage 1 / SMB Direct):** `10.71.1.0/24` (MTU 9000) - SMB Direct RDMA
+- **VLAN 712 (Storage 2 / SMB Direct):** `10.71.2.0/24` (MTU 9000) - SMB Direct RDMA
+- **VLAN 713 (Storage 3 / SMB Direct):** `10.71.3.0/24` (MTU 9000) - third adapter, 3-node switchless
 
 ---
 

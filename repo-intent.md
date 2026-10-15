@@ -15,13 +15,15 @@ server — runs entirely in the browser.**
 ## Shape
 
 - Vite + TypeScript SPA (`src/`, `public/`, `Icons/`)
-- Live at azurelocal.cloud/azurelocal-draftsman/
+- Live at azurelocal.cloud/azurelocal-draftsman/ (docs under /docs/), deployed by the `ci-pages` workflow
 
 ## How it relates to other repos
 
 - Mentioned in the AzureLocal registry (`platform/mcp-server/_content/registry.yaml`)
-  as "isometric diagram builder (React + Vite)" — check whether this is a fork of
-  an upstream diagram-builder project before making structural changes
+  as "isometric diagram builder (React + Vite)". It is a fork of AzLoFlows by
+  Cristian Edwards Sabathe (MIT); keep the upstream credit and licence.
+- Exports a `.drawio` topology that follows the conventions of Trailwright's
+  draw.io export (see `docs/drawio-export.md`); no code is shared.
 
 ## Status
 

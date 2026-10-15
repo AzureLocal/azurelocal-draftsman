@@ -1,28 +1,25 @@
-# Logical Network Isolation & HCI VLAN Profiles
+# Logical networks and VLAN profiles
 
-This guide outlines the standard VLAN segmentation and MTU requirements for Azure Local HCI host clusters.
+Azure Local traffic is separated into logical networks so storage bandwidth does not contend with virtual machine or host management traffic. Draftsman draws each as an area with a VLAN, a subnet and an MTU.
 
----
+## Default schedule
 
-## 1. HCI Traffic Isolation Schedule
-
-Network traffic in an Azure Local deployment is separated into distinct logical networks to prevent storage bandwidth contention from impacting virtual machine or host management traffic.
-
-| Traffic Network | Default VLAN ID | Subnet CIDR (Example) | MTU Size | RDMA / RoCEv2 | Description |
+| Network | VLAN | Subnet (example) | MTU | RDMA | Notes |
 |---|:---:|---|:---:|:---:|---|
-| **Management** | **VLAN 711** | `10.0.10.0/24` | 1500 | No | Host OS management, Arc agent, WAC, and AD communication. |
-| **Compute / Tenant** | **VLAN 712** | `10.0.12.0/24` | 1500 / 9000 | Optional | Hyper-V virtual machine tenant workload networks. |
-| **Storage 1 (S2D)** | **VLAN 713** | `172.16.10.0/24` | **9000 (Jumbo)** | **Yes (RoCEv2 / iWARP)** | Storage Spaces Direct RDMA fabric 1 traffic. |
-| **Storage 2 (S2D)** | **VLAN 714** | `172.16.11.0/24` | **9000 (Jumbo)** | **Yes (RoCEv2 / iWARP)** | Storage Spaces Direct RDMA fabric 2 traffic. |
+| **Management** | 7 (example) | `192.168.7.0/24` | 1500 | No | Host management, Arc agent, WAC, AD. Network ATC does not set this VLAN. |
+| **Compute / tenant** | 8 (example) | `10.0.8.0/24` | 1500 | No | Virtual machine traffic. |
+| **Storage 1** | **711** | `10.71.1.0/24` | 9000 | Yes | Network ATC default for storage adapter 1. |
+| **Storage 2** | **712** | `10.71.2.0/24` | 9000 | Yes | Network ATC default for storage adapter 2. |
+| **Storage 3** | **713** | `10.71.3.0/24` | 9000 | Yes | Third adapter; used by a 3-node switchless mesh. |
 
----
+Management and compute IDs are example values (the rack-aware reference architecture uses 7 and 8 in its examples). Replace them with your own.
 
-## 2. Jumbo Frames (MTU 9000) Requirement
+## Custom VLANs and the Network ATC defaults
 
-- Storage Spaces Direct (S2D) uses RDMA (Remote Direct Memory Access) for high-speed, low-latency disk serialization across host nodes.
-- **MTU 9000** must be configured consistently end-to-end across:
-  1. Server physical NIC adapters (pNICs).
-  2. Hyper-V vSwitch adapters.
-  3. Top-of-Rack (ToR) switch trunk ports and VLAN interfaces.
+Network ATC gives storage adapters VLANs 711, 712, 713 and so on up to 718 (719 reserved) unless you pass `StorageVlans`. You can use any VLAN for any network in Draftsman. When a **non-storage** network uses 711 to 719 the auditor raises `RULE-VLAN-ATC-COLLISION` as a warning, never an error: the design stays valid, but a storage intent that keeps the defaults would reuse that VLAN.
 
-> ⚠️ Mismatched MTU settings (e.g. Host configured for 9000 while Switch is 1500) will cause silent packet drops and S2D cluster storage failure.
+## Jumbo frames
+
+MTU 9000 on storage is common practice and recommended for SMB Direct. It is **not** required for RoCEv2; Learn requires jumbo frames only for iWARP when the hosts use them (switch MTU 9216). Draftsman reports a standard MTU on a storage network as a recommendation (info) for RoCEv2 and as a warning when the design is set to iWARP. If you use jumbo frames, configure them end to end: adapters, vSwitch, and every switch port that carries the VLAN. A mismatch causes silent drops.
+
+Sources: [Network ATC default values](https://learn.microsoft.com/azure/azure-local/deploy/network-atc#default-network-atc-values), [rack-aware reference architecture](https://learn.microsoft.com/azure/azure-local/concepts/rack-aware-cluster-reference-architecture).

@@ -7,24 +7,25 @@ guidelines for contributing to the project.
 
 1. Fork the repository
 2. Clone your fork locally
-3. Install dependencies: `npm install`
-4. Start the dev server: `npm run dev`
+3. Install dependencies: `npm ci` (and `npm --prefix docs ci` for the docs)
+4. Start the dev server: `npm run dev` (http://localhost:8125/)
 
 ## Development Workflow
 
 ### Branching
 
-- Create a `Release` branch from `main` for your work
+- Create a feature branch from `main` (`feature/<topic>`, `fix/<topic>`)
 - Open a pull request targeting `main` when ready
 - Do not commit directly to `main`
 - Keep branches short-lived to minimise merge conflicts
 
 ### Before Submitting a PR
 
-1. **Type-check**: `npx tsc -b`
-2. **Build**: `npm run build`
-3. **Test**: `npm test`
-4. Ensure the CI pipeline passes (ESLint, TypeScript, Vite build, Vitest)
+1. **Lint**: `npm run lint`
+2. **Test**: `npm test`
+3. **Build** (type check + Vite): `npm run build`; for the docs too: `npm run build:site`
+4. Ensure the `ci-pages` workflow passes (lint, test, audit, build)
+5. Commit messages follow Conventional Commits (`feat(auditor): ...`); release-please builds the changelog from them
 
 ### Pull Request Guidelines
 
@@ -38,11 +39,19 @@ guidelines for contributing to the project.
 |---|---|
 | `src/app/` | App shell and layout |
 | `src/components/` | Shared UI components |
-| `src/features/` | Feature modules (canvas, export, inspector, etc.) |
-| `src/lib/` | Geometry, rendering, serialisation utilities |
+| `src/features/` | Feature modules (canvas, export, inspector, validation, wizard, etc.) |
+| `src/features/validation/rules/` | One module per compliance rule group, with tests in `__tests__/` |
+| `src/lib/` | Geometry, rendering, serialisation, topology analysis utilities |
 | `src/state/` | Zustand store and history |
 | `src/types/` | TypeScript type definitions |
 | `public/` | Static assets and predefined scenarios |
+
+## Adding or changing a compliance rule
+
+1. Base it on a Microsoft Learn page and put the URL in `COMPLIANCE_RULES` (`src/types/validation.ts`) and in `docs/compliance-auditor.md`.
+2. Implement it as a pure function of the audit context in `src/features/validation/rules/` and register it in `diagramAuditor.ts`.
+3. Add tests for pass, fail and at least one edge case (`src/test/fixtures.ts` has builders). Use example values only.
+4. A rule that cannot be sure should warn or inform, not error.
 
 ## Code Style
 
