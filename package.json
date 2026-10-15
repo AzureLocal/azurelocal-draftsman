@@ -1,20 +1,39 @@
 {
   "name": "azurelocal-draftsman",
   "private": false,
-  "version": "0.9.0",
-  "description": "Azure Local Draftsman — Interactive 2.5D visual architecture editor and pre-flight compliance auditor for Azure Local and Hyper-V network infrastructure",
-  "keywords": ["azure-local-draftsman", "draftsman", "azure-local", "hyper-v", "network-visualization", "isometric", "canvas", "react"],
-  "homepage": "https://azurelocal.github.io/azurelocal-draftsman/",
-  "bugs": { "url": "https://github.com/AzureLocal/azurelocal-draftsman/issues" },
-  "repository": { "type": "git", "url": "https://github.com/AzureLocal/azurelocal-draftsman" },
-  "author": "Cristian Edwards Sabathe",
+  "version": "0.2.0",
+  "description": "Azure Local Draftsman: browser-based 2.5D cabling and compliance diagramming for Azure Local network architectures (pin-level cabling, VLANs, Network ATC intents, compliance auditor, cable schedule and switch port map export)",
+  "keywords": [
+    "azure-local",
+    "draftsman",
+    "cabling",
+    "network-diagram",
+    "compliance",
+    "network-atc",
+    "rack-aware",
+    "isometric",
+    "react"
+  ],
+  "homepage": "https://azurelocal.cloud/azurelocal-draftsman/",
+  "bugs": {
+    "url": "https://github.com/AzureLocal/azurelocal-draftsman/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AzureLocal/azurelocal-draftsman"
+  },
+  "author": "AzureLocal contributors (forked from AzLoFlows by Cristian Edwards Sabathe)",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.app.json --noEmit && vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "docs:build": "npm --prefix docs run docs:build",
+    "build:site": "npm run build && npm run docs:build && node scripts/assemble-site.mjs"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -33,5 +52,11 @@
     "typescript-eslint": "^8.57.1",
     "vite": "^6.2.1",
     "vitest": "^3.0.8"
-  }
+  },
+  "contributors": [
+    {
+      "name": "Cristian Edwards Sabathe",
+      "description": "Author of AzLoFlows, the upstream project"
+    }
+  ]
 }

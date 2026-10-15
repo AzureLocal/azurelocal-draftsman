@@ -1,7 +1,7 @@
 {
-  "name": "azurelocal-azloflows-docs",
-  "version": "1.0.0",
-  "description": "Canonical VitePress documentation for HCS / AzureLocal repository",
+  "name": "azurelocal-draftsman-docs",
+  "version": "0.2.0",
+  "description": "VitePress documentation for Azure Local Draftsman",
   "private": true,
   "scripts": {
     "docs:dev": "vitepress dev .",
@@ -13,4 +13,3 @@
     "vue": "^3.4.0"
   }
 }
-

@@ -2,7 +2,7 @@
 # Event: Stop
 # Configure: set $logDir to your repo's .claude/logs/ path
 
-$logDir = "D:\git\azurelocal\azurelocal-azloflows\.claude\logs"
+$logDir = Join-Path (Split-Path -Parent $PSScriptRoot) "logs"
 
 if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir -Force | Out-Null }
 

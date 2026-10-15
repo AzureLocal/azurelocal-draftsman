@@ -5,8 +5,10 @@ import { fileURLToPath, URL } from 'node:url';
 // Load package.json version
 import pkg from './package.json' with { type: 'json' };
 
-export default defineConfig({
-  base: './',
+// The app is served from the org Pages path https://azurelocal.cloud/azurelocal-draftsman/ (docs under /docs/).
+// Local dev serves from '/'; set VITE_BASE to override.
+export default defineConfig(({ command }) => ({
+  base: process.env.VITE_BASE ?? (command === 'build' ? '/azurelocal-draftsman/' : '/'),
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
@@ -19,4 +21,4 @@ export default defineConfig({
   server: {
     port: 8125,
   },
-});
+}));

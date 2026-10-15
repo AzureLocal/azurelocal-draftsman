@@ -1,4 +1,4 @@
-# Azure DevOps Pipeline Trigger for azurelocal-azloflows
+# Azure DevOps Pipeline Trigger for azurelocal-draftsman
 # Governed centrally in HCS Platform Engineering
 
 trigger:
