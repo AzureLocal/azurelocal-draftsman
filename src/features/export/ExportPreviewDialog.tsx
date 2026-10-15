@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import Button from '@/components/ui/Button';
-import { exportCanvasAsPngSaveAs } from '@/features/export/fileActions';
 
 interface ExportPreviewDialogProps {
   canvas: HTMLCanvasElement;
@@ -32,6 +31,7 @@ export default function ExportPreviewDialog({ canvas, fileName, onClose }: Expor
   }
 
   async function handleSaveAs() {
+    const { exportCanvasAsPngSaveAs } = await import('@/features/export/fileActions');
     await exportCanvasAsPngSaveAs(canvas, fileName);
     onClose();
   }

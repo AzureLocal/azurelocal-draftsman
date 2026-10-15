@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import AppShell from '@/app/layout/AppShell';
 import StatusBar from '@/app/layout/StatusBar';
 import TopToolbar from '@/app/layout/TopToolbar';
@@ -12,12 +12,14 @@ import RecentDocumentsPanel from '@/features/canvas/RecentDocumentsPanel';
 import VersionHistoryPanel from '@/features/canvas/VersionHistoryPanel';
 import ShapePalette from '@/features/palette/ShapePalette';
 import ScenarioToolbar from '@/features/scenarios/ScenarioToolbar';
-import LandingPage from '@/features/landing/LandingPage';
-import GuidedSetupWizard from '@/features/wizard/GuidedSetupWizard';
 import type { ViewportSize } from '@/lib/geometry/iso';
 import { saveDocument } from '@/lib/serialization/storage';
 import { applyUrlParams } from '@/lib/urlParams';
 import { useEditorStore } from '@/state/useEditorStore';
+
+// The landing page (documentation and release notes) and the wizard are not needed to paint the editor.
+const LandingPage = lazy(() => import('@/features/landing/LandingPage'));
+const GuidedSetupWizard = lazy(() => import('@/features/wizard/GuidedSetupWizard'));
 
 const SAVE_DEBOUNCE_MS = 400;
 
@@ -27,6 +29,7 @@ export default function App() {
   const document = useEditorStore((state) => state.document);
   const presentMode = useEditorStore((state) => state.presentMode);
   const theme = useEditorStore((state) => state.theme);
+  const wizardOpen = useEditorStore((state) => state.wizardOpen);
   const [cursorWorld, setCursorWorld] = useState<{ x: number; y: number } | null>(null);
   const [viewport, setViewport] = useState<ViewportSize>({ width: 1280, height: 720 });
   const [hoveredEntity, setHoveredEntity] = useState<{ id: string; screenX: number; screenY: number } | null>(null);
@@ -51,7 +54,9 @@ export default function App() {
     <>
       <MeshBackground />
       {activeView === 'landing' ? (
-        <LandingPage />
+        <Suspense fallback={null}>
+          <LandingPage />
+        </Suspense>
       ) : (
         <AppShell
           toolbar={<TopToolbar canvasRef={canvasRef} viewport={viewport} />}
@@ -66,7 +71,11 @@ export default function App() {
           )}
         </AppShell>
       )}
-      <GuidedSetupWizard />
+      {wizardOpen && (
+        <Suspense fallback={null}>
+          <GuidedSetupWizard />
+        </Suspense>
+      )}
       <ToastHost />
     </>
   );

@@ -4,8 +4,8 @@ import { nodeIconList } from '@/lib/icons/nodeIcons';
 import { colorSwatches, textColorSwatches } from '@/features/palette/paletteData';
 import { companionFillForGlow } from '@/lib/rendering/tokens';
 import { getDocScenarios, getDocFlowSources, getDocFlowTypes, getDocFlowTypeExclusions, getDocSourceFlowTypeExclusions, getDocFlowSourceRules } from '@/types/document';
-import type { AreaEntity, NodeShape, PickerDef } from '@/types/document';
-import { CABLE_MEDIA_CATALOG } from '@/types/cabling';
+import type { AreaEntity, NodeEntity, NodeShape, PickerDef } from '@/types/document';
+import { CABLE_MEDIA_CATALOG, type CableMediaType } from '@/types/cabling';
 import { DEFAULT_HCI_VLANS } from '@/types/logicalNetwork';
 import { getConnectorStyleOptions, getSelectedEntity, useEditorStore } from '@/state/useEditorStore';
 import FlowTypeVisibilityDialog from './FlowTypeVisibilityDialog';
@@ -393,7 +393,7 @@ export default function InspectorPanel() {
             </label>
             <label className="field">
                 <span>Text Position</span>
-                <select value={selectedNode.textPosition || "center"} onChange={(event) => updateNode(selectedNode.id, { textPosition: event.target.value as any })}>
+                <select value={selectedNode.textPosition || "center"} onChange={(event) => updateNode(selectedNode.id, { textPosition: event.target.value as NodeEntity['textPosition'] })}>
                   <option value="center">Center</option>
                   <option value="top-left">Top Left</option>
                   <option value="top-center">Top Center</option>
@@ -487,7 +487,7 @@ export default function InspectorPanel() {
             </label>
             <label className="field">
               <span>Cable Media Type</span>
-              <select value={selectedConnector.cableType ?? 'dac'} onChange={(event) => updateConnector(selectedConnector.id, { cableType: event.target.value as any })}>
+              <select value={selectedConnector.cableType ?? 'dac'} onChange={(event) => updateConnector(selectedConnector.id, { cableType: event.target.value as CableMediaType })}>
                 {Object.values(CABLE_MEDIA_CATALOG).map((c) => (
                   <option key={c.id} value={c.id}>{c.name} ({c.speedLabel})</option>
                 ))}

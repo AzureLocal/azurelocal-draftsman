@@ -12,6 +12,7 @@ import { normalizeBounds } from '@/lib/geometry/selection';
 import { renderScene } from '@/features/canvas/renderers/renderScene';
 import { useEditorStore } from '@/state/useEditorStore';
 import type { AnchorId, NodeShape } from '@/types/document';
+import { saveDocument as save } from '@/lib/serialization/storage';
 
 interface CanvasViewportProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -125,7 +126,6 @@ export default function CanvasViewport({ canvasRef, onCursorWorldChange, onViewp
         // Trigger explicit save and toast
         const s = useEditorStore.getState();
         try {
-          const { saveDocument: save } = await import('@/lib/serialization/storage');
           save(s.document);
           s.pushToast('Diagram saved', 'success');
         } catch {

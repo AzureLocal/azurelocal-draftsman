@@ -2,7 +2,7 @@ import { getTextRatios } from '@/lib/geometry/textPosition';
 import { DETAIL_ZOOM_THRESHOLD, NODE_ICON_SCALE, DEFAULT_FONT_SIZE } from '@/lib/config';
 import { worldToScreen, type ViewportSize } from '@/lib/geometry/iso';
 import { nodeIconCatalog } from '@/lib/icons/nodeIcons';
-import { drawPolygon, drawRoundedPolygon, drawTransformedText } from '@/lib/rendering/canvasPrimitives';
+import { drawPolygon, drawTransformedText } from '@/lib/rendering/canvasPrimitives';
 import { hexToRgba, lightenHex, darkenHex, deepToneForGlow } from '@/lib/rendering/tokens';
 import type { CameraState, NodeEntity } from '@/types/document';
 

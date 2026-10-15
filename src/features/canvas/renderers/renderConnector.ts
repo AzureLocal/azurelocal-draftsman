@@ -2,7 +2,7 @@ import { ISO_ANGLE_DEG, ISO_Y_SCALE, ISO_SCALE, CONNECTOR_STUB, NODE_DEPTH } fro
 import { getScreenAnchorPoint, parseAnchorId } from '@/lib/geometry/anchors';
 import { buildIsoPath, worldToScreen, type ViewportSize } from '@/lib/geometry/iso';
 import { findPathCrossings, insertHopsIntoPath, type Crossing } from '@/lib/geometry/crossings';
-import { drawArrowHead, drawPolyline, roundRectPath } from '@/lib/rendering/canvasPrimitives';
+import { drawPolyline } from '@/lib/rendering/canvasPrimitives';
 import { hexToRgba, darkenHex } from '@/lib/rendering/tokens';
 import { isoQuad } from '@/lib/geometry/iso';
 import type { AreaEntity, CameraState, ConnectorEntity, NodeEntity, Point } from '@/types/document';

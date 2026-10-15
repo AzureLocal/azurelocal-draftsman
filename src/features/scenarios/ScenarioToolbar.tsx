@@ -1,6 +1,5 @@
 import { useEditorStore } from '@/state/useEditorStore';
 import { getDocScenarios, getDocFlowSources, getDocFlowTypes, getDocFlowTypeExclusions, getDocSourceFlowTypeExclusions, getDocFlowSourceRules, flowTypeLabel } from '@/types/document';
-import type { ScenarioId, FlowSource, FlowType } from '@/types/document';
 
 export default function ScenarioToolbar() {
   const document = useEditorStore((s) => s.document);

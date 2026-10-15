@@ -222,7 +222,7 @@ export default function LandingPage() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setAboutSubTab(item.id as any)}
+                    onClick={() => setAboutSubTab(item.id as typeof aboutSubTab)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -597,7 +597,7 @@ export default function LandingPage() {
               ].map((dt) => (
                 <button
                   key={dt.id}
-                  onClick={() => setDocsCategory(dt.id as any)}
+                  onClick={() => setDocsCategory(dt.id as typeof docsCategory)}
                   style={{
                     padding: '10px 18px',
                     borderRadius: '8px',

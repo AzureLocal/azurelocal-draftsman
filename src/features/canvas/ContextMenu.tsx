@@ -3,7 +3,7 @@ import { colorSwatches, textColorSwatches } from '@/features/palette/paletteData
 import { nodeIconList } from '@/lib/icons/nodeIcons';
 import { companionFillForGlow } from '@/lib/rendering/tokens';
 import { getDocScenarios, getDocFlowSources, getDocFlowTypes } from '@/types/document';
-import type { AreaEntity, NodeShape, PickerDef } from '@/types/document';
+import type { AreaEntity, NodeEntity, NodeShape, PickerDef } from '@/types/document';
 import { getConnectorStyleOptions, getSelectedEntity, useEditorStore } from '@/state/useEditorStore';
 import type { ConnectorStyle } from '@/types/document';
 
@@ -232,7 +232,7 @@ export default function ContextMenu({ x, y, onClose }: ContextMenuProps) {
           </div>
           <div className="context-menu__section">
             <span className="context-menu__section-label">Text Position</span>
-            <select className="context-menu__select" value={selectedNode.textPosition || 'center'} onChange={(e) => updateNode(selectedNode.id, { textPosition: e.target.value as any })}>
+            <select className="context-menu__select" value={selectedNode.textPosition || 'center'} onChange={(e) => updateNode(selectedNode.id, { textPosition: e.target.value as NodeEntity['textPosition'] })}>
               <option value="center">Center</option>
               <option value="top-left">Top Left</option>
               <option value="top-center">Top Center</option>

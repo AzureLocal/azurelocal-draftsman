@@ -45,7 +45,7 @@ describe('draw.io export', () => {
 
   it('labels edges with ports, VLAN and cable type and colours storage orange', () => {
     const xml = buildDrawio(wizardDoc());
-    expect(xml).toMatch(/value="OCP-P1 - [A-Za-z0-9]+  VLAN 7  DAC"/);
+    expect(xml).toMatch(/value="OCP-P1 - [A-Za-z0-9]+ {2}VLAN 7 {2}DAC"/);
     expect(xml).toContain(`strokeColor=${DRAWIO_COLORS.storage}`);
     expect(xml).toContain(`strokeColor=${DRAWIO_COLORS.management}`);
   });

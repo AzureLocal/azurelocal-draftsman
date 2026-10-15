@@ -21,7 +21,7 @@ guidelines for contributing to the project.
 
 ### Before Submitting a PR
 
-1. **Lint**: `npm run lint`
+1. **Lint**: `npm run lint` (0 errors; the warning count is capped at the current baseline of 70, mostly unused locals in the upstream shape renderers and a few `any` casts: fix what you touch, do not add new ones)
 2. **Test**: `npm test`
 3. **Build** (type check + Vite): `npm run build`; for the docs too: `npm run build:site`
 4. Ensure the `ci-pages` workflow passes (lint, test, audit, build)

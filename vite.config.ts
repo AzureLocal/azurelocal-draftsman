@@ -18,6 +18,19 @@ export default defineConfig(({ command }) => ({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    // Keep every chunk under 500 kB: React DOM and other vendor code get their own chunks; export, landing and wizard code load on demand.
+    chunkSizeWarningLimit: 500,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/scheduler')) return 'react-dom';
+          if (id.includes('node_modules')) return 'vendor';
+          return undefined;
+        },
+      },
+    },
+  },
   server: {
     port: 8125,
   },

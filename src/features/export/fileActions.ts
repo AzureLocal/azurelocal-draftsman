@@ -7,6 +7,7 @@ import { isVisible } from '@/lib/visibility';
 import { nodeIconCatalog } from '@/lib/icons/nodeIcons';
 import { hexToRgba, darkenHex } from '@/lib/rendering/tokens';
 import { findPathCrossings, insertHopsIntoPath } from '@/lib/geometry/crossings';
+import { normalizeDocument } from '@/lib/serialization/storage';
 import { buildConnectorSmoothPath } from '@/features/canvas/renderers/renderConnector';
 import type { CameraState, ConnectorEntity, DiagramDocument, FlowSource, FlowType, NodeEntity, Point, TagFilter } from '@/types/document';
 import { getDocScenarios, getDocFlowSources, getDocFlowTypes, flowTypeLabel } from '@/types/document';
@@ -33,7 +34,6 @@ export async function importDocumentFromFile(file: File): Promise<DiagramDocumen
     throw new Error('File does not contain a valid diagram');
   }
   // Run through normalizeDocument to validate and sanitize the imported data
-  const { normalizeDocument } = await import('@/lib/serialization/storage');
   return normalizeDocument(parsed);
 }
 

@@ -1,8 +1,8 @@
 import { getTextRatios } from '@/lib/geometry/textPosition';
 import { NODE_DEPTH, DETAIL_ZOOM_THRESHOLD, NODE_ICON_SCALE, DEFAULT_FONT_SIZE } from '@/lib/config';
-import { isoQuad, worldToScreen, type ViewportSize } from '@/lib/geometry/iso';
+import { isoQuad, type ViewportSize } from '@/lib/geometry/iso';
 import { nodeIconCatalog } from '@/lib/icons/nodeIcons';
-import { drawPolygon, drawTransformedText } from '@/lib/rendering/canvasPrimitives';
+import { drawTransformedText } from '@/lib/rendering/canvasPrimitives';
 import { hexToRgba, lightenHex, darkenHex, deepToneForGlow } from '@/lib/rendering/tokens';
 import type { CameraState, NodeEntity, Point } from '@/types/document';
 

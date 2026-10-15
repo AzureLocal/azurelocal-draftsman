@@ -3,7 +3,16 @@ import { MIN_ZOOM, MAX_ZOOM, ZOOM_STEP } from '@/lib/config';
 import Button from '@/components/ui/Button';
 import GlassPanel from '@/components/ui/GlassPanel';
 import ExportPreviewDialog from '@/features/export/ExportPreviewDialog';
-import { exportDocumentAsJson, exportDocumentAsJsonSaveAs, exportDocumentAsSvg, exportDocumentAsSvgSaveAs, exportDocumentAsPdf, exportDocumentAsHtml, importDocumentFromFile } from '@/features/export/fileActions';
+// The export code (SVG, PDF, HTML) is large and only needed on click, so it loads on demand.
+type FileActions = typeof import('@/features/export/fileActions');
+const loadFileActions = (): Promise<FileActions> => import('@/features/export/fileActions');
+const exportDocumentAsJson = async (...a: Parameters<FileActions['exportDocumentAsJson']>) => (await loadFileActions()).exportDocumentAsJson(...a);
+const exportDocumentAsJsonSaveAs = async (...a: Parameters<FileActions['exportDocumentAsJsonSaveAs']>) => (await loadFileActions()).exportDocumentAsJsonSaveAs(...a);
+const exportDocumentAsSvg = async (...a: Parameters<FileActions['exportDocumentAsSvg']>) => (await loadFileActions()).exportDocumentAsSvg(...a);
+const exportDocumentAsSvgSaveAs = async (...a: Parameters<FileActions['exportDocumentAsSvgSaveAs']>) => (await loadFileActions()).exportDocumentAsSvgSaveAs(...a);
+const exportDocumentAsPdf = async (...a: Parameters<FileActions['exportDocumentAsPdf']>) => (await loadFileActions()).exportDocumentAsPdf(...a);
+const exportDocumentAsHtml = async (...a: Parameters<FileActions['exportDocumentAsHtml']>) => (await loadFileActions()).exportDocumentAsHtml(...a);
+const importDocumentFromFile = async (...a: Parameters<FileActions['importDocumentFromFile']>) => (await loadFileActions()).importDocumentFromFile(...a);
 import { exportCableScheduleCsv } from '@/features/export/exportCableScheduleCsv';
 import { exportSwitchPortMap } from '@/features/export/exportSwitchPortMap';
 import { exportDrawio } from '@/features/export/exportDrawio';

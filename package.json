@@ -29,7 +29,7 @@
     "dev": "vite",
     "build": "tsc -p tsconfig.app.json --noEmit && vite build",
     "preview": "vite preview",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 70",
     "test": "vitest run",
     "test:watch": "vitest",
     "docs:build": "npm --prefix docs run docs:build",

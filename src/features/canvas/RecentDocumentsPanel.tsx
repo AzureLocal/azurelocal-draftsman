@@ -4,10 +4,10 @@ import { loadRecent, type RecentEntry } from '@/lib/serialization/storage';
 import { useEditorStore } from '@/state/useEditorStore';
 
 export default function RecentDocumentsPanel() {
-  const importDocument = useEditorStore((s) => s.importDocument);
   const pushToast = useEditorStore((s) => s.pushToast);
   const currentDocId = useEditorStore((s) => s.document.id);
-  const entries = useMemo(() => loadRecent(), [currentDocId]);
+  // Re-read the recent list whenever the open document changes (it is saved under a new id).
+  const entries = useMemo(() => (currentDocId ? loadRecent() : []), [currentDocId]);
 
   const handleLoad = useCallback((entry: RecentEntry) => {
     try {
@@ -24,7 +24,7 @@ export default function RecentDocumentsPanel() {
     } catch {
       pushToast('Could not load document', 'error');
     }
-  }, [importDocument, pushToast]);
+  }, [pushToast]);
 
   if (entries.length === 0) return null;
 
