@@ -79,6 +79,11 @@ export default function GuidedSetupWizard() {
       cableMedia,
     };
     buildWizardTopology(config);
+    // The designer mounts after the view switch; fit the new diagram into it once the canvas exists.
+    window.setTimeout(() => {
+      const canvas = window.document.querySelector('canvas');
+      if (canvas) useEditorStore.getState().fitToScreen(canvas.clientWidth, canvas.clientHeight);
+    }, 250);
   };
 
   return (

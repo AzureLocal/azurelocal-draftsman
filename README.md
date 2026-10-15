@@ -11,7 +11,7 @@
 
 The Learn references were checked against Azure Local 12.2609 (latest).
 
-![Draftsman canvas](docs/screenshot-public-path-proxy-arc.png)
+![Draftsman canvas: a generated rack-aware cluster with SET teams, VLAN zones and the audit badge](docs/screenshot-designer.png)
 
 ## What it does
 
