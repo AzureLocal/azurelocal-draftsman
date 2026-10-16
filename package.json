@@ -1,7 +1,7 @@
 {
   "name": "azurelocal-draftsman",
   "private": false,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Azure Local Draftsman: browser-based 2.5D cabling and compliance diagramming for Azure Local network architectures (pin-level cabling, VLANs, Network ATC intents, compliance auditor, cable schedule and switch port map export)",
   "keywords": [
     "azure-local",
