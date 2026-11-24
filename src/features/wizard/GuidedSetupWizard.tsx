@@ -2,25 +2,12 @@ import { useState } from 'react';
 import { useEditorStore } from '@/state/useEditorStore';
 import { resolveIntentModel, serverProfileId, validateWizardChoice, type WizardTopologyConfig } from './buildTopology';
 import { getHardwareProfile } from '@/types/hardwareProfiles';
-import { isAtcDefaultStorageVlan, type ClusterPattern, type IntentModel, type StoragePattern } from '@/types/topology';
+import { isAtcDefaultStorageVlan, type IntentModel } from '@/types/topology';
+import { InfrastructureImportError, readInfrastructureDesign, type InfrastructureDesign } from './fromInfrastructure';
+import { TOPOLOGY_PRESETS } from './presets';
 
-interface TopologyPreset {
-  id: string;
-  nodeCount: WizardTopologyConfig['nodeCount'];
-  pattern: ClusterPattern;
-  storage: StoragePattern;
-  title: string;
-  desc: string;
-}
-
-const PRESETS: TopologyPreset[] = [
-  { id: 'switchless-2', nodeCount: 2, pattern: 'single-rack', storage: 'switchless', title: '2-Node Switchless Cluster', desc: 'Direct node-to-node storage links, two ToR switches for management and compute. Remote office and edge.' },
-  { id: 'switchless-3', nodeCount: 3, pattern: 'single-rack', storage: 'switchless', title: '3-Node Switchless Cluster', desc: 'Full storage mesh between three nodes. No Network ATC automatic storage IPs: plan addressing.' },
-  { id: 'switched-4', nodeCount: 4, pattern: 'single-rack', storage: 'switched', title: '4-Node Dual-ToR HA Cluster', desc: 'One MLAG ToR pair carries management, compute and storage. The standard single-rack design.' },
-  { id: 'switched-8', nodeCount: 8, pattern: 'single-rack', storage: 'switched', title: '8-Node High-Density Cluster', desc: 'Single rack, one MLAG ToR pair for all traffic, dedicated OOB console.' },
-  { id: 'rack-aware-4', nodeCount: 4, pattern: 'rack-aware', storage: 'switched', title: 'Rack-Aware Cluster (2 zones, 4 nodes)', desc: 'Two rooms, two ToR per room, dedicated storage links between rooms (VLAN 711 and 712).' },
-  { id: 'rack-aware-8', nodeCount: 8, pattern: 'rack-aware', storage: 'switched', title: 'Rack-Aware Cluster (2 zones, 8 nodes)', desc: 'Two rooms with four nodes each, management and compute grouped, dedicated storage intent.' },
-];
+/** An infrastructure.yml is some tens of KB; a far larger file is not one, and is not read into the page. */
+const MAX_INFRASTRUCTURE_FILE_BYTES = 2 * 1024 * 1024;
 
 const INTENT_MODELS: { id: IntentModel; title: string; desc: string }[] = [
   { id: 'mgmt-compute-storage', title: 'Management + Compute, Storage', desc: 'Two intents on four ports. Required for rack-aware and switchless.' },
@@ -36,7 +23,7 @@ export default function GuidedSetupWizard() {
   const [step, setStep] = useState<number>(1);
 
   const [presetId, setPresetId] = useState<string>('switched-4');
-  const preset = PRESETS.find((p) => p.id === presetId) ?? PRESETS[2];
+  const preset = TOPOLOGY_PRESETS.find((p) => p.id === presetId) ?? TOPOLOGY_PRESETS[2];
   const nodeCount = preset.nodeCount;
   const [intentModel, setIntentModel] = useState<IntentModel>('mgmt-compute-storage');
   const [serverModel, setServerModel] = useState<string>('AX-760');
@@ -46,7 +33,10 @@ export default function GuidedSetupWizard() {
   const [computeVlan, setComputeVlan] = useState<number>(8);
   const [storageVlan1, setStorageVlan1] = useState<number>(711);
   const [storageVlan2, setStorageVlan2] = useState<number>(712);
+  const [storageVlan3, setStorageVlan3] = useState<number>(713);
   const [mtu, setMtu] = useState<number>(9000);
+  const [imported, setImported] = useState<{ fileName: string; design: InfrastructureDesign } | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
   const [cableMedia, setCableMedia] = useState<'DAC 25G' | 'MMF 100G'>('DAC 25G');
 
   if (!wizardOpen) return null;
@@ -58,6 +48,36 @@ export default function GuidedSetupWizard() {
     { name: 'Management', vlan: mgmtVlan },
     { name: 'Compute', vlan: computeVlan },
   ].filter((x) => isAtcDefaultStorageVlan(x.vlan));
+
+  /** Fills the answers from the environment's infrastructure.yml: topology, intents, VLANs and the models it names. */
+  const handleImport = async (file: File | undefined) => {
+    if (!file) return;
+    if (file.size > MAX_INFRASTRUCTURE_FILE_BYTES) {
+      setImported(null);
+      setImportError(`${file.name} is ${Math.round(file.size / 1024)} KB: too large for an infrastructure.yml (the limit is ${MAX_INFRASTRUCTURE_FILE_BYTES / 1024} KB).`);
+      return;
+    }
+    try {
+      const design = readInfrastructureDesign(await file.text());
+      if (design.presetId) setPresetId(design.presetId);
+      if (design.intentModel) setIntentModel(design.intentModel);
+      if (design.mgmtVlan !== undefined) setMgmtVlan(design.mgmtVlan);
+      if (design.computeVlan !== undefined) setComputeVlan(design.computeVlan);
+      if (design.storageVlans.length >= 2) {
+        setStorageVlan1(design.storageVlans[0]);
+        setStorageVlan2(design.storageVlans[1]);
+        if (design.storageVlans[2] !== undefined) setStorageVlan3(design.storageVlans[2]);
+      }
+      if (design.mtu) setMtu(design.mtu);
+      if (design.serverModel) setServerModel(design.serverModel);
+      if (design.switchModel) setSwitchModel(design.switchModel);
+      setImported({ fileName: file.name, design });
+      setImportError(null);
+    } catch (error) {
+      setImported(null);
+      setImportError(error instanceof InfrastructureImportError ? error.message : `Could not read the file: ${String(error)}`);
+    }
+  };
 
   const handleFinish = () => {
     const config: WizardTopologyConfig = {
@@ -73,7 +93,7 @@ export default function GuidedSetupWizard() {
         computeVlan,
         storageVlan1,
         storageVlan2,
-        storageVlan3: 713,
+        storageVlan3,
         mtu,
       },
       cableMedia,
@@ -178,8 +198,35 @@ export default function GuidedSetupWizard() {
               <p style={{ fontSize: '14px', color: '#94a3b8', margin: '0 0 16px' }}>
                 Choose the Azure Local network pattern: switchless or switched storage, single rack or rack-aware (two zones).
               </p>
+              <div style={{ marginBottom: '16px', padding: '12px 14px', borderRadius: '10px', background: 'rgba(0, 229, 255, 0.05)', border: '1px dashed rgba(0, 229, 255, 0.35)' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>Start from your infrastructure.yml</div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px', lineHeight: 1.4 }}>
+                  Read the nodes, Network ATC intents and VLANs from the azurelocal-toolkit infrastructure.yml (schema 5), so the diagram matches the file the other tools use. The file stays on this computer.
+                </div>
+                <input
+                  type="file"
+                  accept=".yml,.yaml,text/yaml"
+                  aria-label="Read infrastructure.yml"
+                  onChange={(e) => {
+                    void handleImport(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                  style={{ fontSize: '12px', color: '#cbd5e1' }}
+                />
+                {importError && (
+                  <div role="alert" style={{ fontSize: '12px', color: '#f87171', marginTop: '8px' }}>{importError}</div>
+                )}
+                {imported && (
+                  <div role="status" style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '8px', lineHeight: 1.5 }}>
+                    Read {imported.fileName}: {imported.design.nodeCount} nodes, {imported.design.pattern}, {imported.design.storage} storage, intents {imported.design.intents.map((i) => i.name).join(', ')}.
+                    {imported.design.notes.map((n) => (
+                      <div key={n} style={{ color: '#fbbf24' }}>{n}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                {PRESETS.map((item) => (
+                {TOPOLOGY_PRESETS.map((item) => (
                   <div
                     key={item.id}
                     onClick={() => setPresetId(item.id)}
