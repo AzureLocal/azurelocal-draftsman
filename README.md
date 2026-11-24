@@ -20,13 +20,28 @@ The Learn references were checked against Azure Local 12.2611 (latest, 12.2611.1
 | **Design** | Dell, Arista, Cisco, Nvidia and Opengear hardware profiles with real port groups; pin-level cables (DAC, MMF, SMF, Cat6A, RS-232) with VLAN tags; SET teams; logical networks (VLAN, CIDR, MTU). |
 | **Patterns** | Switched storage on one MLAG ToR pair, switchless storage (1 to 4 nodes), and rack-aware clusters (two zones). |
 | **Network ATC** | Per-host intents: group-all, management plus compute with a dedicated storage intent, or disaggregated (three intents). |
-| **Wizard** | Generates a fully cabled, audit-clean design for 2 and 3 node switchless, 4 and 8 node switched, and 4 and 8 node rack-aware clusters. |
+| **Wizard** | Generates a fully cabled, audit-clean design for 2 and 3 node switchless, 4 and 8 node switched, and 4 and 8 node rack-aware clusters. Step 1 can **Start from your infrastructure.yml**: the node count, topology, storage connectivity, Network ATC intents, VLANs, storage MTU, server model and ToR switches are read from the environment's file (azurelocal-toolkit, schema 5); the file is read in the browser and never uploaded or written. |
 | **Auditor** | 16 pattern-aware rules, each linked to its Microsoft Learn source, shown live as canvas badges and in the audit drawer. See [compliance-auditor](docs/compliance-auditor.md). |
 | **Exports** | Cable schedule CSV, switch port map TXT, draw.io (`.drawio`), PNG, SVG, PDF, interactive HTML and JSON. |
 
 ### Network ATC defaults the tool follows
 
 Network ATC assigns storage VLANs 711, 712, 713 and up by default (10.71.1.0/24, 10.71.2.0/24, 10.71.3.0/24). Draftsman uses those for storage, so a diagram matches what Network ATC will configure. Management and compute VLANs are not set by Network ATC; the tool ships example values (7 and 8) and warns, without blocking, when you put a non-storage network on 711 to 719. See [Network ATC intents](docs/network-atc-intents.md).
+
+## Where Draftsman fits in the Azure Local tool chain
+
+Draftsman is a **planning and documentation** tool: it draws the cabling, VLANs and Network ATC intents of the cluster. It reads the environment's `infrastructure.yml` and writes nothing back; its output is drawings and schedules for people.
+
+```text
+Surveyor (sizing handoff) -> Trailwright (infrastructure.yml) -> Draftsman (cabling diagram, schedules) -> hardware discovery -> ZTP -> toolkit deploy
+```
+
+| Direction | What | Name |
+|---|---|---|
+| In | The environment file Trailwright wrote | `infrastructure.yml` (schema 5), chosen in the wizard's step 1: `nodes[]`, `scenario.topology`, `scenario.storage_connectivity`, `networking.intents[]`, `networking.vlans[]`, `networking.management.vlan_id`, `networking.storage.networks[]`, `hardware.model`, `network_devices[]` ([how each answer is read](docs/guided-setup-wizard.md#start-from-your-infrastructureyml)) |
+| Out | The diagram and its schedules | `.drawio`, PNG, SVG, PDF, interactive HTML and JSON; the cable schedule CSV and the switch port map TXT |
+
+The design you draw and the file the toolkit deploys from describe the same VLANs and intents, so change them in `infrastructure.yml` first (Trailwright) and draw from it, not the other way round. See also [Trailwright's draw.io export](docs/drawio-export.md).
 
 ## Prerequisites
 
@@ -49,6 +64,8 @@ cd azurelocal-draftsman
 npm ci
 npm run dev          # http://localhost:8125/
 ```
+
+After you pull a version that added the wizard's infrastructure.yml reader, run `npm ci` (or `npm install`) again: it needs the `yaml` package, which an older `node_modules` does not have.
 
 ```bash
 npm run lint         # ESLint

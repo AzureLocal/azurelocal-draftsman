@@ -10,7 +10,7 @@ Draftsman is a browser-based cabling and compliance diagramming tool for Azure L
 4. **[Compliance auditor](compliance-auditor.md)**: the 16 rules, each with its Microsoft Learn source.
 5. **[Cable schedule and switch port map exporters](schedule-exporters.md)**: CSV and TXT formats.
 6. **[draw.io export](drawio-export.md)**: the `.drawio` export and how it compares with Trailwright's.
-7. **[Guided setup wizard](guided-setup-wizard.md)**: generate an audit-clean topology in five steps.
+7. **[Guided setup wizard](guided-setup-wizard.md)**: generate an audit-clean topology in five steps, optionally from your environment's `infrastructure.yml`.
 
 ## Origin
 
