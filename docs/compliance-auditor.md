@@ -1,6 +1,6 @@
 # Compliance auditor
 
-The auditor inspects the diagram continuously and reports findings as badges on the canvas and as a list in the **Pre-Flight Audit** drawer. It is a pure function of the diagram document (`auditDiagramDocument`), so the same diagram always gives the same result. Each rule links to the Microsoft Learn page it is based on (checked against Azure Local 12.2609, latest).
+The auditor inspects the diagram continuously and reports findings as badges on the canvas and as a list in the **Pre-Flight Audit** drawer. It is a pure function of the diagram document (`auditDiagramDocument`), so the same diagram always gives the same result. Each rule links to the Microsoft Learn page it is based on (checked against Azure Local 12.2611, latest: 12.2611.1004.9, OS build 26100.33822).
 
 ## How rules read the design
 

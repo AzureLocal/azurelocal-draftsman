@@ -9,7 +9,7 @@
 
 **Open it: <https://azurelocal.cloud/azurelocal-draftsman/>** (documentation: <https://azurelocal.cloud/azurelocal-draftsman/docs/>)
 
-The Learn references were checked against Azure Local 12.2609 (latest).
+The Learn references were checked against Azure Local 12.2611 (latest, 12.2611.1004.9, OS build 26100.33822); its release notes change no cabling, network pattern or Network ATC rule.
 
 ![Draftsman canvas: a generated rack-aware cluster with SET teams, VLAN zones and the audit badge](docs/screenshot-designer.png)
 

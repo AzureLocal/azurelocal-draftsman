@@ -1,6 +1,6 @@
 # Network ATC intents and cluster patterns
 
-Draftsman models the host networking decisions that Network ATC applies, so the cabling you draw and the intents you plan stay consistent. Everything below follows Microsoft Learn (checked against Azure Local 12.2609, latest).
+Draftsman models the host networking decisions that Network ATC applies, so the cabling you draw and the intents you plan stay consistent. Everything below follows Microsoft Learn (checked against Azure Local 12.2611, latest: 12.2611.1004.9, OS build 26100.33822).
 
 ## Cluster patterns
 
