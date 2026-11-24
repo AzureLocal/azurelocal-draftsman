@@ -75,7 +75,7 @@ export default function LandingPage() {
                   letterSpacing: '1px',
                 }}
               >
-                <span>⚡ Version 0.9.0-preview (Active Development)</span>
+                <span>⚡ Version {__APP_VERSION__} (Active Development)</span>
               </div>
 
               <h1
