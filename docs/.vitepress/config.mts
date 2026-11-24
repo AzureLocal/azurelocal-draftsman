@@ -19,6 +19,7 @@ export default defineConfig({
         text: 'Guides',
         items: [
           { text: 'Overview', link: '/' },
+          { text: 'Prerequisites', link: '/prerequisites' },
           { text: 'Cabling standards', link: '/cabling-standards' },
           { text: 'Logical networks and VLANs', link: '/logical-hci-vlans' },
           { text: 'Network ATC intents', link: '/network-atc-intents' },
