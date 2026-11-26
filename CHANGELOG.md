@@ -5,6 +5,18 @@ All notable changes to Azure Local Draftsman will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.0](https://github.com/AzureLocal/azurelocal-draftsman/compare/azurelocal-draftsman-v0.3.0...azurelocal-draftsman-v0.4.0) (2026-11-26)
+
+
+### Features
+
+* **wizard:** start the guided setup from the environment's infrastructure.yml AB[#0](https://github.com/AzureLocal/azurelocal-draftsman/issues/0) ([020b090](https://github.com/AzureLocal/azurelocal-draftsman/commit/020b09076abb00363e16e760a4f128b482e8efe8))
+
+
+### Bug Fixes
+
+* **landing:** show the released version instead of the upstream 0.9.0-preview label AB[#0](https://github.com/AzureLocal/azurelocal-draftsman/issues/0) ([837d161](https://github.com/AzureLocal/azurelocal-draftsman/commit/837d161d969a133ef4b66d335f7e8718a34466a7))
+
 ## [0.3.0](https://github.com/AzureLocal/azurelocal-draftsman/compare/azurelocal-draftsman-v0.2.0...azurelocal-draftsman-v0.3.0) (2026-10-16)
 
 
